@@ -1,4 +1,5 @@
 import "../styles/globals.css";
+import "../styles/LandingStyles.css";
 
 function Front({
   Component,

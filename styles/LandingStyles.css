@@ -1,0 +1,169 @@
+@media (min-width: 768px) {
+  h1.slide-title,
+  h2.slide-subtitle {
+    margin-left: 200px;
+    margin-right: 200px;
+    text-shadow: #333333 0px 0px 7px;
+  }
+}
+h1.slide-title {
+  margin-top: 10%;
+  font-size: 3rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 20px;
+}
+h2.slide-subtitle {
+  font-size: 1.5rem;
+}
+
+/* En tu archivo de estilos CSS */
+
+.button-slider {
+  padding: 10px 20px;
+  border: 2px solid #fff;
+  background-color: transparent;
+  color: #fff;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%); /* Sólo desplazar verticalmente */
+  z-index: 10;
+}
+
+.glitch-button.prev {
+  left: 10px;
+  transform: translateY(-50%);
+}
+
+.glitch-button.next {
+  right: 10px;
+  transform: translateY(-50%);
+}
+
+.glitch-button {
+  font-size: 3rem; /* Tamaño de la fuente ajustado a los botones */
+  font-weight: 700;
+  color: white;
+  position: relative;
+  background: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition: color 0.3s ease-in-out;
+}
+
+.glitch-button:hover {
+  color: rgb(217, 217, 217);
+  transition: color 0.3s ease-in-out;
+}
+
+.glitch-button::before,
+.glitch-button::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: -1;
+  opacity: 0; /* Inicialmente invisible */
+  color: grey; /* Cambia a un color gris para el efecto difuminado */
+}
+
+.glitch-button:hover::before,
+.glitch-button:hover::after {
+  content: attr(data-text);
+  position: absolute;
+  color: rgba(125, 47, 47, 0.8);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: -1;
+  opacity: 1;
+  animation: glitch-flicker 0.5s infinite alternate;
+}
+
+.glitch-button:hover::before {
+  color: rgba(220, 52, 40, 0.8); /* Color rosa para el efecto de glitch */
+  animation: distort1 300ms linear infinite;
+  animation-delay: 0.25s;
+}
+
+.glitch-button:hover::after {
+  color: rgba(25, 69, 212, 0.8); /* Color azul para el efecto de glitch */
+  animation: distort2 300ms linear infinite;
+}
+
+@keyframes glitch-flicker {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%);
+  }
+  10% {
+    opacity: 0.5;
+    top: calc(50% - 10px);
+    left: calc(50% - 10px);
+  }
+  20% {
+    opacity: 0.3;
+    top: calc(50% + 15px);
+    left: calc(50% + 9px);
+  }
+  30% {
+    opacity: 0.7;
+    top: calc(50% + 5px);
+    left: calc(50% - 5px);
+  }
+  40% {
+    opacity: 0.4;
+    top: calc(50% - 20px);
+    left: calc(50% + 20px);
+  }
+  50% {
+    opacity: 0.6;
+    top: 50%;
+    left: 50%;
+  }
+}
+
+@keyframes distort1 {
+  0%,
+  100% {
+    top: 50%;
+    left: 50%;
+  }
+  25% {
+    top: calc(50% - 1px);
+    left: calc(50% + 1px);
+  }
+  50% {
+    top: calc(50% + 1px);
+    left: calc(50% - 1px);
+  }
+  75% {
+    top: calc(50% + 2px);
+    left: calc(50% + 2px);
+  }
+}
+
+@keyframes distort2 {
+  0%,
+  100% {
+    top: 50%;
+    left: 50%;
+  }
+  25% {
+    top: calc(50% + 1px);
+    left: calc(50% + 1px);
+  }
+  50% {
+    top: calc(50% - 1px);
+    left: calc(50% - 1px);
+  }
+  75% {
+    top: calc(50% - 2px);
+    left: calc(50% + 2px);
+  }
+}

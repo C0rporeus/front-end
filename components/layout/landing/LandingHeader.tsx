@@ -22,30 +22,28 @@ const LandingHeader = () => {
   return (
     <header
       className={`${
-        isScrolled ? "bg-white shadow-lg" : "bg-transparent"
+        isScrolled
+          ? "bg-white shadow-lg text-gray-800"
+          : "bg-transparent text-white shadow-none"
       } fixed top-0 left-0 w-full z-10 transition-all duration-300`}
     >
-      <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
-        <div className="text-3xl font-bold text-gray-800 dark:text-white">
-          <Link href="/">Mi Portafolio</Link>
+      <nav className={`${
+        isScrolled
+          ? "text-gray-800"
+          : "text-white"
+      } container mx-auto px-6 py-3 flex justify-between items-center `}
+      >
+        <div className="text-3xl font-bold">
+          <Link href="/">Yonathan G.</Link>
         </div>
         <div className="flex items-center">
-          <Link
-            href="/about"
-            className="text-gray-800 dark:text-white px-4 py-2"
-          >
+          <Link href="/about" className="px-4 py-2">
             Acerca de
           </Link>
-          <Link
-            href="/portfolio"
-            className="text-gray-800 dark:text-white px-4 py-2"
-          >
+          <Link href="/portfolio" className="px-4 py-2">
             Portafolio
           </Link>
-          <Link
-            href="/blog"
-            className="text-gray-800 dark:text-white px-4 py-2"
-          >
+          <Link href="/blog" className="px-4 py-2">
             Blog
           </Link>
         </div>
