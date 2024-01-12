@@ -27,13 +27,16 @@ const LandingHeader = () => {
           : "bg-transparent text-white shadow-none"
       } fixed top-0 left-0 w-full z-10 transition-all duration-300`}
     >
-      <nav className={`${
-        isScrolled
-          ? "text-gray-800"
-          : "text-white"
-      } container mx-auto px-6 py-3 flex justify-between items-center `}
+      <nav
+        className={`${
+          isScrolled ? "text-gray-800" : "text-white"
+        } container mx-auto px-6 py-3 flex justify-between items-center `}
       >
-        <div className="text-3xl font-bold">
+        <div
+          className="text-3xl font-bold glitch-logo"
+          data-text="Yonathan G.
+        "
+        >
           <Link href="/">Yonathan G.</Link>
         </div>
         <div className="flex items-center">

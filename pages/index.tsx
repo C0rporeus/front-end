@@ -1,6 +1,8 @@
 import Head from "next/head";
 import LandingHeader from "../components/layout/landing/LandingHeader";
 import LandingSlider from "../components/layout/landing/LandingSlider";
+import LandingBlogSlider from "@/components/layout/landing/LandingBlogSlider";
+import LandingSkillsSlider from "@/components/layout/landing/LandingSkills";
 
 const Home = () => {
   return (
@@ -14,9 +16,9 @@ const Home = () => {
 
       <main className="mt-[70px]">
         <LandingSlider />
+        <LandingBlogSlider />
+        <LandingSkillsSlider />
       </main>
-
-      {/* Incluir aquí otros componentes como Footer si es necesario */}
     </div>
   );
 };

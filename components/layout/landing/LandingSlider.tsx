@@ -24,6 +24,20 @@ const LandingSlider = () => {
         "Tecnologias como kubernetes, docker, virtualizacion, cloud computing, etc.",
       image: "https://source.unsplash.com/random/1920x1680?Hardware",
     },
+    {
+      id: 4,
+      title: "Desarrollo de aplicaciones web y moviles",
+      subtitle:
+        "Resolucion de problemas con controles basados en software, ajuste de procedimientos y procesos.",
+      image: "https://source.unsplash.com/random/1920x1680?coding",
+    },
+    {
+      id: 5,
+      title: "Aprovisionamiento de infraestructura y estrategias de seguridad",
+      subtitle:
+        "Tecnologias como kubernetes, docker, virtualizacion, cloud computing, etc.",
+      image: "https://source.unsplash.com/random/1920x1680?Hardware",
+    },
   ];
 
   const [currentSlide, setCurrentSlide] = useState(0);

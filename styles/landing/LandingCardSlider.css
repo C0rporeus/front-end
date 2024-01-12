@@ -1,0 +1,83 @@
+@media (min-width: 768px) {
+  h1.articles-title {
+    margin-left: 200px;
+    margin-right: 200px;
+    text-shadow: #333333 0px 0px 7px;
+  }
+}
+h1.articles-title {
+  margin-top: 1%;
+  font-size: 3rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 20px;
+}
+.slider-container {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.cards-container {
+  display: flex;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  width: 100%;
+}
+
+.card {
+  flex: 0 0 calc(33.333% - 20px); /* Ancho de cada tarjeta */
+  margin: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.card-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.card-content {
+  padding: 15px;
+}
+
+.card-title {
+  font-size: 1.2em;
+  margin-bottom: 10px;
+}
+
+.card-description {
+  font-size: 0.9em;
+  margin-bottom: 15px;
+}
+
+.card-button {
+  padding: 10px 20px;
+  background-color: blue;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.slider-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  z-index: 100;
+}
+
+.prev-button {
+  left: 10px;
+}
+
+.next-button {
+  right: 10px;
+}
