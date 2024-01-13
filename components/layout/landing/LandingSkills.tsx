@@ -1,3 +1,4 @@
+import Slider from "@/components/UI/Slider";
 import React, { useState, useRef } from "react";
 
 // slider para mostrar tarjetas de blog con los ultimos posts publicados
@@ -9,7 +10,7 @@ const LandingSkillsSlider = () => {
       title: "Titulo del skills 1",
       description:
         "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quas.",
-      image: "https://source.unsplash.com/random/1920x1680?raspberrypi",
+      image: "https://source.unsplash.com/random/1920x1680?c#language",
       url: "#",
     },
     {
@@ -17,7 +18,7 @@ const LandingSkillsSlider = () => {
       title: "Titulo del skills 2",
       description:
         "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quas.",
-      image: "https://source.unsplash.com/random/1920x1680?opensource",
+      image: "https://source.unsplash.com/random/1920x1680?programming",
       url: "#",
     },
     {
@@ -25,7 +26,7 @@ const LandingSkillsSlider = () => {
       title: "Titulo del skills 3",
       description:
         "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quas.",
-      image: "https://source.unsplash.com/random/1920x1680?esports",
+      image: "https://source.unsplash.com/random/1920x1680?javascript",
       url: "#",
     },
     {
@@ -65,64 +66,12 @@ const LandingSkillsSlider = () => {
       title: "Titulo del skills 8",
       description:
         "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quas.",
-      image: "https://source.unsplash.com/random/1920x1680?Hardware",
+      image: "https://source.unsplash.com/random/1920x1680?Python",
       url: "#",
     },
   ];
 
-  const skillsContainerRef = useRef(null);
-
-  const handleScroll = (direction: string) => {
-    if (skillsContainerRef.current) {
-      const skillWidth =
-        (skillsContainerRef.current as HTMLElement).clientWidth / 3;
-      const currentScroll = (skillsContainerRef.current as HTMLElement)
-        .scrollLeft;
-
-      const newScroll =
-        direction === "next"
-          ? currentScroll + skillWidth
-          : currentScroll - skillWidth;
-
-      (skillsContainerRef.current as HTMLElement).scrollTo({
-        left: newScroll,
-        behavior: "smooth",
-      });
-    }
-  };
-
-  return (
-    <div className="slider-container">
-        <h1 className="skills-title">Skills</h1>
-      <div ref={skillsContainerRef} className="skills-container">
-        {dataSkills.map((skill) => (
-          <div key={skill.id} className="skill">
-            <img src={skill.image} alt="Post" className="skill-image" />
-            <div className="skill-content">
-              <h1 className="skill-title">{skill.title}</h1>
-              <p className="skill-description">{skill.description}</p>
-              <button className="skill-button">Leer Más</button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <button
-        onClick={() => handleScroll("prev")}
-        className="slider-button prev-button glitch-button"
-        data-text="<"
-      >
-        {"<"}
-      </button>
-      <button
-        onClick={() => handleScroll("next")}
-        className="slider-button next-button glitch-button"
-        data-text=">"
-      >
-        {">"}
-      </button>
-    </div>
-  );
+  return <Slider title="Skills" data={dataSkills} cardWidthFactor={3} />;
 };
 
 export default LandingSkillsSlider;

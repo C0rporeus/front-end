@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Slider from "../../UI/Slider";
 
 const LandingSlider = () => {
   const slides = [

@@ -1,37 +1,37 @@
+import Slider from "@/components/UI/Slider";
 import React, { useState, useRef } from "react";
-import Slider from "../../UI/Slider";
 
 // slider para mostrar tarjetas de blog con los ultimos posts publicados
-const LandingBlogSlider = () => {
+const LandingProjectsSlider = () => {
   //  TARJETAS DE BLOG
-  const dataCards = [
+  const dataProjects = [
     {
       id: 1,
-      title: "Titulo del post 1",
+      title: "Proyecto del post 1",
       description:
         "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quas.",
-      image: "https://source.unsplash.com/random/1920x1680?raspberrypi",
+      image: "https://source.unsplash.com/random/1920x1680?infraestructure",
       url: "#",
     },
     {
       id: 2,
-      title: "Titulo del post 2",
+      title: "Proyecto del post 2",
       description:
         "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quas.",
-      image: "https://source.unsplash.com/random/1920x1680?opensource",
+      image: "https://source.unsplash.com/random/1920x1680?iot",
       url: "#",
     },
     {
       id: 3,
-      title: "Titulo del post 3",
+      title: "Proyecto del post 3",
       description:
         "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quas.",
-      image: "https://source.unsplash.com/random/1920x1680?esports",
+      image: "https://source.unsplash.com/random/1920x1680?automation",
       url: "#",
     },
     {
       id: 4,
-      title: "Titulo del post 4",
+      title: "Proyecto del post 4",
       description:
         "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quas.",
       image: "https://source.unsplash.com/random/1920x1680?apple",
@@ -70,9 +70,8 @@ const LandingBlogSlider = () => {
       url: "#",
     },
   ];
-  return (
-    <Slider title="Ultimos articulos" data={dataCards} cardWidthFactor={3} />
-  );
+
+  return <Slider title="Proyectos" data={dataProjects} cardWidthFactor={3} />;
 };
 
-export default LandingBlogSlider;
+export default LandingProjectsSlider;
