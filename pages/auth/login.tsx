@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import Head from "next/head";
 
-import { loginUser } from "@/api/auth";
+import { loginUser } from "@/api/auth/auth";
 
 const Login = () => {
     const router = useRouter();

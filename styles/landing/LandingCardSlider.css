@@ -71,7 +71,6 @@ h1.articles-title {
   border: none;
   cursor: pointer;
   padding: 10px;
-  z-index: 100;
 }
 
 .prev-button {
