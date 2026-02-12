@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+import Image from "next/image";
 
 const Slider = ({ title, data, cardWidthFactor }: { title: string, data: any[], cardWidthFactor: number }) => {
   const sliderContainerRef = useRef(null);
@@ -26,7 +27,7 @@ const handleScroll = (direction: string) => {
       <div ref={sliderContainerRef} className="cards-container">
         {data.map((item) => (
           <div key={item.id} className="card">
-            <img src={item.image} alt={item.title} className="card-image" />
+            <Image src={item.image} alt={item.title} className="card-image" width={400} height={300} />
             <div className="card-content">
               <h1 className="card-title">{item.title}</h1>
               <p className="card-description">{item.description}</p>

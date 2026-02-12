@@ -1,12 +1,13 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 @import url("landing/LandingHeader.css");
 @import url("landing/LandingSlider.css");
 @import url("landing/LandingCardSlider.css");
 @import url("landing/LandingSkills.css");
 @import url("landing/LandingFooter.css");
 @import url("common/ContactForm.css");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
