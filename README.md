@@ -1,4 +1,4 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+Frontend del portafolio personal y toolkit tecnico para pares.
 
 ## Getting Started
 
@@ -15,6 +15,26 @@ bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Secciones disponibles
+
+- Publico:
+  - `/` landing principal
+  - `/about`
+  - `/portfolio`
+  - `/blog`
+  - `/tools` (base64, uuidv4, certificados)
+- Privado:
+  - `/auth/login`
+  - `/auth/register`
+  - `/admin` (gestion inicial de contenido)
+
+## Variables de entorno
+
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:3100
+JWT_SECRET=secret
+```
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

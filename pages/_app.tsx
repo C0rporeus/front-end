@@ -1,4 +1,5 @@
 import "../styles/globals.css";
+import { AuthProvider } from "@/context/auth-context";
 
 function Front({
   Component,
@@ -7,7 +8,11 @@ function Front({
   Component: React.ComponentType<any>;
   pageProps: any;
 }) {
-  return <Component {...pageProps} />;
+  return (
+    <AuthProvider>
+      <Component {...pageProps} />
+    </AuthProvider>
+  );
 }
 
 export default Front;

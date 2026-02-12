@@ -6,22 +6,29 @@ import Link from "next/link";
 import Head from "next/head";
 
 import { loginUser } from "@/api/auth/auth";
+import { useAuth } from "@/context/auth-context";
 
 const Login = () => {
-    const router = useRouter();
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+  const router = useRouter();
+  const { setTokenValue } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-    async function handleSubmit(e: any) {
-        e.preventDefault();
-        const user = await loginUser({
-            email,
-            password,
-        });
-        if (user) {
-            router.push("/admin");
-        }
+  async function handleSubmit(e: any) {
+    e.preventDefault();
+    setError("");
+    try {
+      const result = await loginUser({
+        email,
+        password,
+      });
+      setTokenValue(result.token);
+      router.push("/admin");
+    } catch (submitError: any) {
+      setError(submitError.message || "No fue posible iniciar sesion");
     }
+  }
 
     return (
         <><Head>
@@ -112,6 +119,11 @@ const Login = () => {
                                 </label>
                             </div>
                         </div>
+                        {error && (
+                            <p className="text-sm text-red-600 mt-2" role="alert">
+                                {error}
+                            </p>
+                        )}
                     </form>
                     <div>
                         <button

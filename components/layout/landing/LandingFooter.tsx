@@ -1,22 +1,23 @@
 import Link from "next/link";
 import React from "react";
-import ContactForm from "../../common/ContactForm";
 
 // Define the props for the Footer component
 interface FooterProps {
-  ContactForm: React.ComponentType;
-  AboutLink: React.ComponentType;
-  // Add any other components you want to include in the footer here
+  ContactForm: React.ComponentType<{ onSubmit: (name: string, email: string, message: string) => void }>;
 }
 
 const LandingFooter: React.FC<FooterProps> = ({ ContactForm }) => (
   <footer className="landing-footer">
     <div className="footer-contact-form">
-      <ContactForm />
+      <ContactForm
+        onSubmit={(name, email, message) => {
+          console.log("Nuevo mensaje de contacto", { name, email, message });
+        }}
+      />
     </div>
     <div className="footer-links">
       <Link href="/about">A cerca de mí</Link>
-      <Link href="/blog">Blog</Link>
+      <Link href="/tools">Tools</Link>
     </div>
     <div className="footer-copy-right">
       © {new Date().getFullYear()} Yonathan Gutierrez R. Todos los derechos

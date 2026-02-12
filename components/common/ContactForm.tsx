@@ -1,14 +1,11 @@
 import React, { useState } from "react";
 import { validationRules } from "../../interfaces/ValidationRuleContactForm";
 import { ContactFormProps } from "../../interfaces/ContactFormProps";
-import { log } from "console";
 
 const ContactForm: React.FC<ContactFormProps> = ({ onSubmit }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const [nameError, setNameError] = useState("");
-  const [emailError, setEmailError] = useState("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const handleSubmit = (event: React.FormEvent) => {

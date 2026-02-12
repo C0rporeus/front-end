@@ -14,33 +14,21 @@ export default NextAuth({
         if (!credentials) {
           return null;
         }
-        const user = await loginUser(credentials);
-        if (user) {
-          return { id: String(user.id), name: user.name, email: user.email };
-        } else {
+        try {
+          await loginUser({
+            email: credentials.email,
+            password: credentials.password,
+          });
+          return {
+            id: credentials.email,
+            name: credentials.email,
+            email: credentials.email,
+          };
+        } catch {
           return null;
         }
       },
     }),
   ],
-  jwt: {
-    secret: process.env.JWT_SECRET,
-  },
-  callbacks: {
-    async jwt(tokenPayload) {
-      if (tokenPayload.user) {
-        tokenPayload.token.id = tokenPayload.user.id;
-      }
-      return tokenPayload.token;
-    },
-    async session(sessionPayload) {
-      if (sessionPayload.session.user) {
-        sessionPayload.session.user = {
-          ...(sessionPayload.session.user as any),
-          id: sessionPayload.token.id as string,
-        };
-      }
-      return sessionPayload.session;
-    },
-  },
+  secret: process.env.JWT_SECRET,
 });

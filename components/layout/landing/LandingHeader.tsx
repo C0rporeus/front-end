@@ -46,8 +46,14 @@ const LandingHeader = () => {
           <Link href="/portfolio" className="px-4 py-2">
             Portafolio
           </Link>
-          <Link href="/blog" className="px-4 py-2">
-            Blog
+          <Link href="/tools" className="px-4 py-2">
+            Tools
+          </Link>
+          <Link href="/auth/login" className="px-4 py-2">
+            Login
+          </Link>
+          <Link href="/admin" className="px-4 py-2">
+            Admin
           </Link>
         </div>
       </nav>
