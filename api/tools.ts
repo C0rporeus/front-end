@@ -1,32 +1,25 @@
-const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3100";
+import { apiRequest } from "@/api/http-client";
 
 type JsonRecord = Record<string, unknown>;
 
-async function request<T>(path: string, method: string, body?: JsonRecord): Promise<T> {
-  const response = await fetch(`${baseURL}${path}`, {
-    method,
-    headers: { "Content-Type": "application/json" },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || "No fue posible procesar la solicitud");
-  }
-
-  return data as T;
-}
-
 export function encodeBase64(value: string) {
-  return request<{ encoded: string; input: string }>("/api/tools/base64/encode", "POST", { value });
+  return apiRequest<{ encoded: string; input: string }>("/api/tools/base64/encode", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ value } as JsonRecord),
+  });
 }
 
 export function decodeBase64(value: string) {
-  return request<{ decoded: string; input: string }>("/api/tools/base64/decode", "POST", { value });
+  return apiRequest<{ decoded: string; input: string }>("/api/tools/base64/decode", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ value } as JsonRecord),
+  });
 }
 
 export function generateUUIDv4() {
-  return request<{ uuid: string }>("/api/tools/uuid/v4", "GET");
+  return apiRequest<{ uuid: string }>("/api/tools/uuid/v4", { method: "GET" });
 }
 
 export function generateSelfSignedCert(payload: {
@@ -35,11 +28,15 @@ export function generateSelfSignedCert(payload: {
   validDays: number;
   password: string;
 }) {
-  return request<{
+  return apiRequest<{
     certPem: string;
     keyPem: string;
     certBase64: string;
     pfxBase64: string;
     password: string;
-  }>("/api/tools/certs/self-signed", "POST", payload);
+  }>("/api/tools/certs/self-signed", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 }

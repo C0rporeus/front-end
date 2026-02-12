@@ -1,3 +1,5 @@
+import { apiRequest } from "@/api/http-client";
+
 type AuthPayload = {
   email: string;
   password: string;
@@ -10,26 +12,16 @@ type AuthSuccess = {
   email?: string;
 };
 
-type ApiError = {
-  code?: string;
-  message?: string;
-};
-
-const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3100";
-
 async function requestAuth(path: string, payload: AuthPayload): Promise<AuthSuccess> {
-  const response = await fetch(`${baseURL}${path}`, {
+  const data = await apiRequest<AuthSuccess>(path, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-
-  const data = (await response.json()) as AuthSuccess & ApiError;
-  if (!response.ok || !data.token) {
-    throw new Error(data.message || "No fue posible completar la autenticacion");
+  if (!data.token) {
+    throw new Error("No fue posible completar la autenticacion");
   }
-
-  return { token: data.token, id: data.id, name: data.name, email: data.email };
+  return data;
 }
 
 async function loginUser(credentials: AuthPayload): Promise<AuthSuccess> {
