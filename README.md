@@ -28,6 +28,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
   - `/auth/login`
   - `/auth/register`
   - `/admin` (CRUD inicial de experiencias del portafolio)
+  - `/admin` incluye panel de observabilidad (`metrics`, `alerts`, `health`, `history`, `summary`)
 
 ## Variables de entorno
 

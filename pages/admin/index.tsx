@@ -8,8 +8,21 @@ import {
   listPrivateExperiences,
   updateExperience,
 } from "@/api/experiences";
+import {
+  getOpsAlerts,
+  getOpsHealth,
+  getOpsHistory,
+  getOpsMetrics,
+  OpsAlerts,
+  OpsHealth,
+  OpsHistoryItem,
+  OpsMetrics,
+  OpsSummary,
+  getOpsSummary,
+} from "@/api/ops";
 import { useAuth } from "@/context/auth-context";
 import { Experience, ExperiencePayload } from "@/interfaces/Experience";
+import { formatApiError } from "@/utils/format-api-error";
 
 export default function AdminPage() {
   const router = useRouter();
@@ -17,6 +30,12 @@ export default function AdminPage() {
   const [items, setItems] = useState<Experience[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [opsLoading, setOpsLoading] = useState(false);
+  const [opsMetrics, setOpsMetrics] = useState<OpsMetrics | null>(null);
+  const [opsAlerts, setOpsAlerts] = useState<OpsAlerts | null>(null);
+  const [opsHealth, setOpsHealth] = useState<OpsHealth | null>(null);
+  const [opsHistory, setOpsHistory] = useState<OpsHistoryItem[]>([]);
+  const [opsSummary, setOpsSummary] = useState<OpsSummary | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<ExperiencePayload>({
     title: "",
@@ -37,6 +56,32 @@ export default function AdminPage() {
     setItems(result);
   }, [token]);
 
+  const refreshOps = useCallback(async () => {
+    if (!token) return;
+    setOpsLoading(true);
+    try {
+      const [metrics, alerts, health] = await Promise.all([
+        getOpsMetrics(token),
+        getOpsAlerts(token),
+        getOpsHealth(token),
+      ]);
+      const [history, summary] = await Promise.all([getOpsHistory(token), getOpsSummary(token)]);
+      setOpsMetrics(metrics);
+      setOpsAlerts(alerts);
+      setOpsHealth(health);
+      setOpsHistory(history.items);
+      setOpsSummary(summary);
+    } finally {
+      setOpsLoading(false);
+    }
+  }, [token]);
+
+  const semaphoreClass = (status?: string) => {
+    if (status === "critical") return "bg-red-600 text-white";
+    if (status === "warn") return "bg-amber-500 text-black";
+    return "bg-emerald-600 text-white";
+  };
+
   useEffect(() => {
     if (!isAuthenticated || !token) {
       router.replace("/auth/login");
@@ -44,9 +89,11 @@ export default function AdminPage() {
     }
 
     refreshItems()
-      .catch((err: any) => setError(err.message || "No se pudo cargar el contenido"))
+      .catch((err: unknown) => setError(formatApiError(err, "No se pudo cargar el contenido")))
       .finally(() => setLoading(false));
-  }, [isAuthenticated, router, token, refreshItems]);
+
+    refreshOps().catch((err: unknown) => setError(formatApiError(err, "No se pudo cargar observabilidad")));
+  }, [isAuthenticated, router, token, refreshItems, refreshOps]);
 
   if (!isAuthenticated) {
     return null;
@@ -71,8 +118,8 @@ export default function AdminPage() {
       });
       setEditingId(null);
       await refreshItems();
-    } catch (err: any) {
-      setError(err.message || "No fue posible guardar");
+    } catch (err: unknown) {
+      setError(formatApiError(err, "No fue posible guardar"));
     }
   };
 
@@ -222,8 +269,8 @@ export default function AdminPage() {
                         try {
                           await deleteExperience(token, item.id);
                           await refreshItems();
-                        } catch (err: any) {
-                          setError(err.message || "No se pudo eliminar");
+                        } catch (err: unknown) {
+                          setError(formatApiError(err, "No se pudo eliminar"));
                         }
                       }}
                     >
@@ -234,6 +281,123 @@ export default function AdminPage() {
               </article>
             ))}
           </div>
+        </section>
+
+        <section className="p-4 border rounded bg-white mt-4">
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="text-xl font-semibold">Observabilidad operativa</h2>
+            <button
+              type="button"
+              className="px-3 py-1 rounded bg-slate-700 text-white text-sm"
+              onClick={async () => {
+                setError("");
+                try {
+                  await refreshOps();
+                } catch (err: unknown) {
+                  setError(formatApiError(err, "No se pudo refrescar observabilidad"));
+                }
+              }}
+            >
+              Refrescar
+            </button>
+          </div>
+          {opsLoading && <p className="text-sm text-gray-600">Consultando metricas...</p>}
+          {!opsLoading && opsSummary && (
+            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${semaphoreClass(opsSummary.status)}`}>
+              Semaforo operativo: {opsSummary.status.toUpperCase()}
+            </div>
+          )}
+          {!opsLoading && opsAlerts && (
+            <p className="text-sm mb-2">
+              Estado alertas:{" "}
+              <span className="font-semibold uppercase">
+                {opsAlerts.level}
+              </span>
+              {opsAlerts.reasons.length > 0 ? ` (${opsAlerts.reasons.join(", ")})` : ""} · scope{" "}
+              {opsAlerts.evaluationScope}
+            </p>
+          )}
+          {!opsLoading && opsMetrics && (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 text-sm">
+              <div className="p-2 border rounded">Requests: {opsMetrics.requestsTotal}</div>
+              <div className="p-2 border rounded">5xx: {opsMetrics.errors5xx}</div>
+              <div className="p-2 border rounded">Auth Failures: {opsMetrics.authFailures}</div>
+              <div className="p-2 border rounded">5xx Rate: {(opsMetrics.errorRate * 100).toFixed(2)}%</div>
+              <div className="p-2 border rounded">
+                Auth Fail Rate: {(opsMetrics.authFailRate * 100).toFixed(2)}%
+              </div>
+              <div className="p-2 border rounded">
+                Started: {new Date(opsMetrics.startedAtUnix * 1000).toLocaleString()}
+              </div>
+            </div>
+          )}
+          {!opsLoading && opsMetrics && (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 text-sm mt-3">
+              <div className="p-2 border rounded">Window (s): {opsMetrics.window.seconds}</div>
+              <div className="p-2 border rounded">Window Requests: {opsMetrics.window.requests}</div>
+              <div className="p-2 border rounded">Window 5xx: {opsMetrics.window.errors5xx}</div>
+              <div className="p-2 border rounded">
+                Window 5xx Rate: {(opsMetrics.window.errorRate * 100).toFixed(2)}%
+              </div>
+              <div className="p-2 border rounded">
+                Window Auth Fail Rate: {(opsMetrics.window.authFailRate * 100).toFixed(2)}%
+              </div>
+            </div>
+          )}
+          {!opsLoading && opsHealth && (
+            <div className="mt-3 p-3 border rounded bg-slate-50 text-sm">
+              <p className="font-semibold mb-2">Health: {opsHealth.status.toUpperCase()}</p>
+              <ul className="list-disc ml-5">
+                {opsHealth.recommendations.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {!opsLoading && opsSummary && (
+            <div className="mt-3 p-3 border rounded bg-white text-sm grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
+              <div className="p-2 border rounded">Samples: {opsSummary.samples.count}/{opsSummary.samples.size}</div>
+              <div className="p-2 border rounded">OK: {opsSummary.distribution.ok}</div>
+              <div className="p-2 border rounded">WARN: {opsSummary.distribution.warn}</div>
+              <div className="p-2 border rounded">CRITICAL: {opsSummary.distribution.critical}</div>
+              <div className="p-2 border rounded">Avg 5xx: {(opsSummary.averages.errorRate * 100).toFixed(2)}%</div>
+              <div className="p-2 border rounded">
+                Avg Auth Fail: {(opsSummary.averages.authFailRate * 100).toFixed(2)}%
+              </div>
+            </div>
+          )}
+          {!opsLoading && opsHistory.length > 0 && (
+            <div className="mt-3 p-3 border rounded bg-white text-sm">
+              <p className="font-semibold mb-2">Historial reciente de salud</p>
+              <div className="max-h-56 overflow-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="py-1">Timestamp</th>
+                      <th className="py-1">Status</th>
+                      <th className="py-1">Scope</th>
+                      <th className="py-1">5xx%</th>
+                      <th className="py-1">Auth%</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...opsHistory]
+                      .reverse()
+                      .slice(0, 20)
+                      .map((item) => (
+                        <tr key={`${item.timestampUnix}-${item.status}`} className="border-b last:border-b-0">
+                          <td className="py-1">{new Date(item.timestampUnix * 1000).toLocaleTimeString()}</td>
+                          <td className="py-1 uppercase">{item.status}</td>
+                          <td className="py-1">{item.scope}</td>
+                          <td className="py-1">{(item.errorRate * 100).toFixed(2)}</td>
+                          <td className="py-1">{(item.authFailRate * 100).toFixed(2)}</td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </section>
       </main>
     </>
