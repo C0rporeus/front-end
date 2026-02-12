@@ -11,6 +11,7 @@ export class ApiClientError extends Error {
 
   constructor(message: string, options?: { code?: string; details?: unknown; requestId?: string }) {
     super(message);
+    Object.setPrototypeOf(this, ApiClientError.prototype);
     this.name = "ApiClientError";
     this.code = options?.code;
     this.details = options?.details;
@@ -20,7 +21,7 @@ export class ApiClientError extends Error {
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3100";
 
-async function safeJson(response: Response): Promise<any> {
+async function safeJson(response: Response): Promise<unknown> {
   const text = await response.text();
   if (!text) return {};
   try {

@@ -13,7 +13,7 @@ describe("auth api client", () => {
       ok: true,
       text: async () => JSON.stringify({ token: "token-123" }),
       headers: new Headers(),
-    }) as any;
+    }) as unknown as typeof fetch;
 
     const result = await loginUser({ email: "mail@test.com", password: "1234" });
     expect(result.token).toBe("token-123");
@@ -24,10 +24,22 @@ describe("auth api client", () => {
       ok: false,
       text: async () => JSON.stringify({ code: "user_already_exists", message: "El usuario ya existe" }),
       headers: new Headers({ "X-Request-ID": "req-1" }),
-    }) as any;
+    }) as unknown as typeof fetch;
 
     await expect(registerUser({ email: "mail@test.com", password: "1234" })).rejects.toThrow(
       "El usuario ya existe"
+    );
+  });
+
+  it("throws when API responds without token", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      text: async () => JSON.stringify({ message: "missing token" }),
+      headers: new Headers(),
+    }) as unknown as typeof fetch;
+
+    await expect(loginUser({ email: "mail@test.com", password: "1234" })).rejects.toThrow(
+      "No fue posible completar la autenticacion"
     );
   });
 });
