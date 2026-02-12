@@ -2,9 +2,9 @@ import Link from "next/link";
 import React from "react";
 
 // Define the props for the Footer component
-interface FooterProps {
+type FooterProps = {
   ContactForm: React.ComponentType<{ onSubmit: (name: string, email: string, message: string) => void }>;
-}
+};
 
 const LandingFooter: React.FC<FooterProps> = ({ ContactForm }) => (
   <footer className="landing-footer">

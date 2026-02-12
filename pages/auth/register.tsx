@@ -7,6 +7,7 @@ import Head from "next/head";
 
 import { registerUser } from "@/api/auth/auth";
 import { useAuth } from "@/context/auth-context";
+import { formatApiError } from "@/utils/format-api-error";
 
 const Register = () => {
   const router = useRouter();
@@ -15,7 +16,7 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  async function handleSubmit(e: any) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
     try {
@@ -25,8 +26,8 @@ const Register = () => {
       });
       setTokenValue(result.token);
       router.push("/admin");
-    } catch (submitError: any) {
-      setError(submitError.message || "No fue posible registrar el usuario");
+    } catch (submitError: unknown) {
+      setError(formatApiError(submitError, "No fue posible registrar el usuario"));
     }
   }
 
@@ -188,6 +189,6 @@ const Register = () => {
             </div>
         </>
     );
-}
+};
 
 export default Register;

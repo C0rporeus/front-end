@@ -7,6 +7,7 @@ import {
   generateSelfSignedCert,
   generateUUIDv4,
 } from "@/api/tools";
+import { formatApiError } from "@/utils/format-api-error";
 
 export default function ToolsPage() {
   const [baseInput, setBaseInput] = useState("");
@@ -20,8 +21,8 @@ export default function ToolsPage() {
   const [validDays, setValidDays] = useState(365);
   const [password, setPassword] = useState("changeit");
 
-  const handleError = (err: any) => {
-    setError(err.message || "Error procesando la solicitud");
+  const handleError = (err: unknown) => {
+    setError(formatApiError(err, "Error procesando la solicitud"));
   };
 
   return (
@@ -58,7 +59,7 @@ export default function ToolsPage() {
                 try {
                   const result = await encodeBase64(baseInput);
                   setBaseOutput(result.encoded);
-                } catch (err: any) {
+                } catch (err: unknown) {
                   handleError(err);
                 }
               }}
@@ -72,7 +73,7 @@ export default function ToolsPage() {
                 try {
                   const result = await decodeBase64(baseInput);
                   setBaseOutput(result.decoded);
-                } catch (err: any) {
+                } catch (err: unknown) {
                   handleError(err);
                 }
               }}
@@ -92,7 +93,7 @@ export default function ToolsPage() {
               try {
                 const result = await generateUUIDv4();
                 setUuidOutput(result.uuid);
-              } catch (err: any) {
+              } catch (err: unknown) {
                 handleError(err);
               }
             }}
@@ -152,7 +153,7 @@ export default function ToolsPage() {
                     result.pfxBase64,
                   ].join("\n")
                 );
-              } catch (err: any) {
+              } catch (err: unknown) {
                 handleError(err);
               }
             }}

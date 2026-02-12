@@ -7,6 +7,7 @@ import Head from "next/head";
 
 import { loginUser } from "@/api/auth/auth";
 import { useAuth } from "@/context/auth-context";
+import { formatApiError } from "@/utils/format-api-error";
 
 const Login = () => {
   const router = useRouter();
@@ -15,7 +16,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  async function handleSubmit(e: any) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
     try {
@@ -25,8 +26,8 @@ const Login = () => {
       });
       setTokenValue(result.token);
       router.push("/admin");
-    } catch (submitError: any) {
-      setError(submitError.message || "No fue posible iniciar sesion");
+    } catch (submitError: unknown) {
+      setError(formatApiError(submitError, "No fue posible iniciar sesion"));
     }
   }
 
@@ -128,7 +129,6 @@ const Login = () => {
                     <div>
                         <button
                             type="submit"
-                            onClick={handleSubmit}
                             className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
                             <span className="absolute left-0 inset-y-0 flex items-center pl-3">
@@ -143,6 +143,6 @@ const Login = () => {
                 </div>
             </div></>
     );
-}
+};
 
 export default Login;

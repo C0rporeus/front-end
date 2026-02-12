@@ -1,20 +1,32 @@
 import React, { useRef } from "react";
 import Image from "next/image";
 
-const Slider = ({ title, data, cardWidthFactor }: { title: string, data: any[], cardWidthFactor: number }) => {
-  const sliderContainerRef = useRef(null);
+type SliderItem = {
+  id: string | number;
+  image: string;
+  title: string;
+  description: string;
+};
 
-const handleScroll = (direction: string) => {
+type SliderProps = {
+  title: string;
+  data: SliderItem[];
+  cardWidthFactor: number;
+};
+
+const Slider = ({ title, data, cardWidthFactor }: SliderProps) => {
+  const sliderContainerRef = useRef<HTMLDivElement | null>(null);
+
+const handleScroll = (direction: "next" | "prev") => {
     if (sliderContainerRef.current) {
-      const elementWidth =
-        (sliderContainerRef.current as HTMLElement).clientWidth / cardWidthFactor;
-    const currentScroll = (sliderContainerRef.current as HTMLElement).scrollLeft;
+      const elementWidth = sliderContainerRef.current.clientWidth / cardWidthFactor;
+    const currentScroll = sliderContainerRef.current.scrollLeft;
       const newScroll =
         direction === "next"
           ? currentScroll + elementWidth
           : currentScroll - elementWidth;
 
-    (sliderContainerRef.current as HTMLElement).scrollTo({
+    sliderContainerRef.current.scrollTo({
         left: newScroll,
         behavior: "smooth",
       });

@@ -1,7 +1,7 @@
-export interface ValidationRule {
+export type ValidationRule = {
   test: (value: string) => boolean;
   error: string;
-}
+};
 
 export const validationRules: { [key: string]: ValidationRule } = {
   name: {
