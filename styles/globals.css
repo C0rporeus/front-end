@@ -9,25 +9,81 @@
 @tailwind components;
 @tailwind utilities;
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --color-bg-base: #111b2e;
+  --color-bg-elevated: #17243a;
+  --color-bg-muted: #1d2f4d;
+  --color-bg-soft: #263b5f;
+  --color-text-primary: #e6edf7;
+  --color-text-secondary: #c0ccde;
+  --color-text-muted: #8da0bb;
+  --color-border: #324764;
+  --color-accent: #6f9fdf;
+  --color-accent-strong: #4f79b8;
+  --color-danger: #fb7185;
+  --color-success: #34d399;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+    color-scheme: dark;
   }
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  color: var(--color-text-primary);
+  background:
+    radial-gradient(circle at 12% 12%, rgba(122, 181, 255, 0.12), transparent 34%),
+    radial-gradient(circle at 88% 0%, rgba(130, 162, 255, 0.09), transparent 38%),
+    linear-gradient(180deg, #15243d 0%, var(--color-bg-base) 42%, #0d1729 100%);
+  min-height: 100vh;
+}
+
+a,
+button,
+input,
+textarea,
+select {
+  transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: rgba(122, 181, 255, 0.28);
+  color: var(--color-text-primary);
+}
+
+@layer components {
+  .public-main {
+    @apply mx-auto w-full max-w-7xl px-4 py-12 md:px-8 md:py-16;
+  }
+
+  .public-page-shell {
+    @apply rounded-2xl border border-slate-700/70 bg-surface-800/55 p-5 shadow-card md:p-8;
+  }
+
+  .public-title {
+    @apply text-3xl font-bold tracking-tight text-text-primary md:text-5xl;
+  }
+
+  .public-lead {
+    @apply mt-3 max-w-3xl text-base leading-7 text-text-secondary md:text-lg;
+  }
+
+  .public-card {
+    @apply rounded-2xl border border-slate-700/80 bg-surface-800/65 p-5 shadow-soft transition-colors duration-200 hover:border-brand-400/70;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }

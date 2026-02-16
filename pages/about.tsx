@@ -1,21 +1,25 @@
 import Head from "next/head";
+import LandingHeader from "@/components/layout/landing/LandingHeader";
 
 export default function About() {
   return (
     <>
       <Head>
-        <title>Acerca de | Portfolio Dev</title>
+        <title>Sobre mi | Portfolio Dev</title>
       </Head>
-      <main className="max-w-4xl mx-auto py-12 px-4 text-gray-800">
-        <h1 className="text-3xl font-bold mb-4">Acerca de mi</h1>
-        <p className="mb-4">
-          Espacio profesional para compartir experiencia en desarrollo de software, arquitectura,
-          seguridad e infraestructura.
-        </p>
-        <p>
-          El objetivo de este portafolio es mostrar evidencia real de trabajo tecnico, herramientas
-          utiles para pares y una ruta de crecimiento sostenida en el tiempo.
-        </p>
+      <LandingHeader />
+      <main className="public-main pt-[96px] md:pt-[104px]">
+        <section className="public-page-shell mx-auto w-full max-w-4xl">
+          <h1 className="public-title">Sobre mi</h1>
+          <p className="public-lead">
+            Este espacio resume mi enfoque de trabajo en desarrollo de software,
+            arquitectura de soluciones e infraestructura con criterios de seguridad.
+          </p>
+          <p className="mt-4 max-w-3xl text-base leading-7 text-text-secondary">
+            El objetivo es compartir evidencia tecnica util, aprendizajes aplicables y
+            proyectos construidos para resolver necesidades reales de negocio.
+          </p>
+        </section>
       </main>
     </>
   );

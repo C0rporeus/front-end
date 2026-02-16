@@ -20,13 +20,10 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSubmit }) => {
       if (!validationRules[field].test(value)) {
         isValid = false;
         newErrors[field] = validationRules[field].error;
-        console.log(
-          `Error en validacion ${field}: ${validationRules[field].error}`
-        );
       }
     }
 
-    setErrors((prevErrors) => ({ ...prevErrors, ...newErrors }));
+    setErrors(newErrors);
     if (isValid) {
       onSubmit(name, email, message);
     }
@@ -35,7 +32,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSubmit }) => {
   return (
     <form onSubmit={handleSubmit} className="contact-form">
       <div className="form-group">
-        <label htmlFor="name">Nombre:</label>
+        <label htmlFor="name">Nombre</label>
         <input
           id="name"
           type="text"
@@ -43,11 +40,13 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSubmit }) => {
           onChange={(e) => setName(e.target.value)}
           required
           className="form-control"
+          aria-invalid={Boolean(errors.name)}
+          aria-describedby={errors.name ? "name-error" : undefined}
         />
-        {errors.name && <div className="error">{errors.name}</div>}
+        {errors.name && <div id="name-error" className="error">{errors.name}</div>}
       </div>
       <div className="form-group">
-        <label htmlFor="email">Email:</label>
+        <label htmlFor="email">Correo electronico</label>
         <input
           id="email"
           type="email"
@@ -55,23 +54,27 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSubmit }) => {
           onChange={(e) => setEmail(e.target.value)}
           required
           className="form-control"
+          aria-invalid={Boolean(errors.email)}
+          aria-describedby={errors.email ? "email-error" : undefined}
         />
-        {errors.email && <div className="error">{errors.email}</div>}
+        {errors.email && <div id="email-error" className="error">{errors.email}</div>}
       </div>
       <div className="form-group">
-        <label htmlFor="message">Mensaje:</label>
+        <label htmlFor="message">Mensaje</label>
         <textarea
           id="message"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           required
           className="form-control"
+          aria-invalid={Boolean(errors.message)}
+          aria-describedby={errors.message ? "message-error" : undefined}
         />
 
-        {errors.message && <div className="error">{errors.message}</div>}
+        {errors.message && <div id="message-error" className="error">{errors.message}</div>}
       </div>
       <button type="submit" className="submit-button">
-        Enviar
+        Enviar mensaje
       </button>
     </form>
   );

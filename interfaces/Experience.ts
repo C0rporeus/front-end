@@ -3,6 +3,7 @@ export type Experience = {
   title: string;
   summary: string;
   body: string;
+  imageUrls: string[];
   tags: string[];
   visibility: "public" | "private";
   createdAt: string;
@@ -13,6 +14,7 @@ export type ExperiencePayload = {
   title: string;
   summary: string;
   body: string;
+  imageUrls: string[];
   tags: string[];
   visibility: "public" | "private";
 };
