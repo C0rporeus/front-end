@@ -45,3 +45,21 @@ export async function apiRequest<T>(path: string, options?: RequestInit): Promis
 
   return data as T;
 }
+
+export function authHeaders(token: string): Record<string, string> {
+  return { Authorization: `Bearer ${token}` };
+}
+
+export async function apiAuthRequest<T>(
+  path: string,
+  token: string,
+  options?: RequestInit,
+): Promise<T> {
+  const headers: Record<string, string> = {
+    ...authHeaders(token),
+    ...(options?.body ? { "Content-Type": "application/json" } : {}),
+    ...(options?.headers as Record<string, string>),
+  };
+
+  return apiRequest<T>(path, { ...options, headers });
+}
