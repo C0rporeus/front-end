@@ -1,11 +1,12 @@
 // pagina de login limpia sin cabecera o footer debe usar los componentes de tailwind js y micro acciones
 
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Head from "next/head";
 
 import { loginUser } from "@/api/auth/auth";
+import ErrorAlert from "@/components/UI/ErrorAlert";
 import { useAuth } from "@/context/auth-context";
 import { formatApiError } from "@/utils/format-api-error";
 
@@ -16,7 +17,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
     try {
@@ -31,118 +32,74 @@ const Login = () => {
     }
   }
 
-    return (
-        <><Head>
-            <title>Yonathan Gutierrez R / Consultor TI</title>
-            <link rel="icon" href="/favicon.ico" />
-        </Head><div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-                {/* <div className="max-w-md w-full space-y-8"> */}
-                <div className="max-w-md w-full">
-                    <div>
-                        {/* <img
-    className="mx-auto h-12 w-auto"
-    src="/images/logo.png"
-    alt="Workflow"
-    /> */}
-                        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                            Iniciar sesión
-                        </h2>
-                        <p className="mt-2 text-center text-sm text-gray-600">
-                            O{" "}
-                            <Link href="/auth/register" className="font-medium text-indigo-600 hover:text-indigo-500">
-                                registrarse
-                            </Link>
-                        </p>
-                    </div>
-                    <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                        <input type="hidden" name="remember" defaultValue="true" />
-                        <div className="rounded-md shadow-sm -space-y-px">
-                            {/* <div>
-        <label htmlFor="email-address" className="sr-only">
-        Email address
-        </label>
-        <input
-        id="email-address"
-        name="email"
-        type="email"
-        autoComplete="email"
-        required
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-        placeholder="Correo electrónico"
-        />
-    </div> */}
-                            <div>
-                                <label htmlFor="email-address" className="sr-only">
-                                    Email address
-                                </label>
-                                <input
-                                    id="email-address"
-                                    name="email"
-                                    type="email"
-                                    autoComplete="email"
-                                    required
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                    placeholder="Correo electrónico" />
-                            </div>
-                            <div>
-                                <label htmlFor="password" className="sr-only">
-                                    Password
-                                </label>
-                                <input
-                                    id="password"
-                                    name="password"
-                                    type="password"
-                                    autoComplete="current-password"
-                                    required
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                    placeholder="Contraseña" />
-                            </div>
-                        </div>
+  return (
+    <>
+      <Head>
+        <title>Ingreso | Portfolio Dev</title>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <main className="flex min-h-screen items-center justify-center px-4 py-10 sm:px-6">
+        <section className="w-full max-w-xl rounded-3xl border border-slate-700/85 bg-surface-800/72 p-6 shadow-card backdrop-blur-sm md:p-8">
+          <h1 className="text-center text-4xl font-extrabold tracking-tight text-text-primary md:text-5xl">
+            Iniciar sesion
+          </h1>
+          <p className="mx-auto mt-3 max-w-md text-center text-base leading-7 text-text-secondary">
+            Accede a tu panel privado o{" "}
+            <Link href="/auth/register" className="font-medium text-brand-400 hover:text-brand-500">
+              crea una cuenta
+            </Link>
+            .
+          </p>
 
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                                <input
-                                    id="remember_me"
-                                    name="remember_me"
-                                    type="checkbox"
-                                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" />
-                                <label
-                                    htmlFor="remember_me"
-                                    className="ml-2 block text-sm text-gray-900"
-                                >
-                                    Recordarme
-                                </label>
-                            </div>
-                        </div>
-                        {error && (
-                            <p className="text-sm text-red-600 mt-2" role="alert">
-                                {error}
-                            </p>
-                        )}
-                    </form>
-                    <div>
-                        <button
-                            type="submit"
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                            <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                                {/* <LockClosedIcon
-    className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400"
-    aria-hidden="true"
-    /> */}
-                            </span>
-                            Iniciar sesión
-                        </button>
-                    </div>
-                </div>
-            </div></>
-    );
+          <form className="mx-auto mt-8 max-w-lg space-y-5" onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="email-address" className="mb-2 block text-base font-medium text-text-secondary">
+                Correo electronico
+              </label>
+              <input
+                id="email-address"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="block min-h-12 w-full rounded-lg border border-slate-600/90 bg-surface-900/90 px-4 py-3 text-lg text-text-primary placeholder:text-text-muted focus:border-brand-400/80"
+                placeholder="tu@correo.com"
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="mb-2 block text-base font-medium text-text-secondary">
+                Contrasena
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="block min-h-12 w-full rounded-lg border border-slate-600/90 bg-surface-900/90 px-4 py-3 text-lg text-text-primary placeholder:text-text-muted focus:border-brand-400/80"
+                placeholder="Tu contrasena"
+              />
+            </div>
+
+            {error && (
+              <ErrorAlert message={error} className="text-sm" />
+            )}
+
+            <button
+              type="submit"
+              className="mt-1 min-h-12 w-full rounded-lg bg-brand-600 px-5 py-3 text-base font-semibold text-white shadow-soft hover:bg-brand-500"
+            >
+              Ingresar al panel
+            </button>
+          </form>
+        </section>
+      </main>
+    </>
+  );
 };
 
 export default Login;

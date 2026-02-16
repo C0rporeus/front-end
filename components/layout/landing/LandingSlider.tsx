@@ -1,42 +1,27 @@
 import React, { useState } from "react";
-import Slider from "../../UI/Slider";
 
 const LandingSlider = () => {
   const slides = [
     {
       id: 1,
       title:
-        "Consultoria en implementacion de tecnologias no solo de software sino tambien de Hardware",
+        "Consultoria estrategica en tecnologia, software e infraestructura",
       subtitle:
-        "Soluciones integrales para la resolucion de retos y problemas en el ambito empresarial y estrategico de multiples organizaciones.",
+        "Diseno e implementacion de soluciones que conectan negocio, plataformas y seguridad de forma sostenible.",
       image: "https://source.unsplash.com/random/1920x1680?technology",
     },
     {
       id: 2,
-      title: "Desarrollo de aplicaciones web y moviles",
+      title: "Productos web y moviles orientados a resultados",
       subtitle:
-        "Resolucion de problemas con controles basados en software, ajuste de procedimientos y procesos.",
+        "Desde discovery hasta entrega continua, construyendo experiencias claras para usuarios y equipos.",
       image: "https://source.unsplash.com/random/1920x1680?coding",
     },
     {
       id: 3,
-      title: "Aprovisionamiento de infraestructura y estrategias de seguridad",
+      title: "Infraestructura moderna y seguridad por diseno",
       subtitle:
-        "Tecnologias como kubernetes, docker, virtualizacion, cloud computing, etc.",
-      image: "https://source.unsplash.com/random/1920x1680?Hardware",
-    },
-    {
-      id: 4,
-      title: "Desarrollo de aplicaciones web y moviles",
-      subtitle:
-        "Resolucion de problemas con controles basados en software, ajuste de procedimientos y procesos.",
-      image: "https://source.unsplash.com/random/1920x1680?coding",
-    },
-    {
-      id: 5,
-      title: "Aprovisionamiento de infraestructura y estrategias de seguridad",
-      subtitle:
-        "Tecnologias como kubernetes, docker, virtualizacion, cloud computing, etc.",
+        "Automatizacion, cloud, contenedores y buenas practicas de observabilidad para operar con confianza.",
       image: "https://source.unsplash.com/random/1920x1680?Hardware",
     },
   ];
@@ -52,37 +37,59 @@ const LandingSlider = () => {
   };
 
   return (
-    <div className="w-full overflow-hidden relative h-[600px]">
+    <section
+      className="relative isolate w-full overflow-hidden"
+      role="region"
+      aria-label="Carrusel principal de servicios"
+      aria-roledescription="carousel"
+    >
       {slides.map((slide, index) => (
         <div
           key={slide.id}
-          className={`absolute w-full h-full bg-cover bg-center transition-opacity duration-500 ${
+          className={`absolute inset-0 min-h-[68svh] bg-cover bg-center transition-opacity duration-500 md:min-h-[74svh] ${
             index === currentSlide ? "opacity-100" : "opacity-0"
           }`}
           style={{ backgroundImage: `url(${slide.image})` }}
+          aria-hidden={index !== currentSlide}
         >
-          <h1 className="slide-title">{slide.title}</h1>
-          <br />
-          <h2 className="slide-subtitle">{slide.subtitle}</h2>
+          <div className="absolute inset-0 bg-slate-950/58" />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/60 via-slate-950/30 to-transparent" />
+          <div className="relative mx-auto flex min-h-[68svh] w-full max-w-7xl items-center px-4 pb-14 pt-24 sm:px-5 md:min-h-[74svh] md:px-8 md:pt-28">
+            <div className="max-w-3xl">
+              <p className="mb-5 text-xs font-semibold uppercase tracking-[0.24em] text-brand-400 md:text-sm">
+                Tecnologia aplicada
+              </p>
+              <h1 className="slide-title">{slide.title}</h1>
+              <p className="slide-subtitle">{slide.subtitle}</p>
+              <a
+                href="#secciones-principales"
+                className="mt-8 inline-flex min-h-11 items-center rounded-lg border border-brand-400/70 bg-brand-500/25 px-5 py-3 text-sm font-semibold text-text-primary shadow-soft hover:bg-brand-500/35 focus-visible:ring-2 focus-visible:ring-brand-400/80 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-900"
+              >
+                Explorar servicios
+              </a>
+            </div>
+          </div>
         </div>
       ))}
 
       <button
+        type="button"
         onClick={prevSlide}
-        className="absolute left-0 top-1/2 z-40 -translate-y-1/2 glitch-button prev glitch"
-        data-text="<"
+        className="slider-nav-button prev absolute left-3 top-1/2 z-40 -translate-y-1/2 md:left-6"
+        aria-label="Ver slide anterior"
       >
-        {"<"}
+        <span aria-hidden="true">{"<"}</span>
       </button>
 
       <button
+        type="button"
         onClick={nextSlide}
-        className="absolute right-0 top-1/2 z-40 -translate-y-1/2 glitch-button next glitch"
-        data-text=">"
+        className="slider-nav-button next absolute right-3 top-1/2 z-40 -translate-y-1/2 md:right-6"
+        aria-label="Ver slide siguiente"
       >
-        {">"}
+        <span aria-hidden="true">{">"}</span>
       </button>
-    </div>
+    </section>
   );
 };
 

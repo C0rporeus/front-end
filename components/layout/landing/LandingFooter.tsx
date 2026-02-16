@@ -9,21 +9,23 @@ type FooterProps = {
 const LandingFooter: React.FC<FooterProps> = ({ ContactForm }) => (
   <footer className="landing-footer">
     <div className="footer-contact-form">
+      <p className="mb-3 text-sm text-text-secondary">
+        ¿Tienes un reto tecnico? Conversemos sobre una solucion aterrizada a tu contexto.
+      </p>
       <ContactForm
-        onSubmit={(name, email, message) => {
-          console.log("Nuevo mensaje de contacto", { name, email, message });
+        onSubmit={(_name, _email, _message) => {
+          // TODO: integrar con endpoint de contacto
         }}
       />
     </div>
-    <div className="footer-links">
-      <Link href="/about">A cerca de mí</Link>
-      <Link href="/tools">Tools</Link>
+    <div className="footer-links" aria-label="Enlaces del sitio">
+      <Link href="/about">Acerca de mi</Link>
+      <Link href="/tools">Herramientas</Link>
+      <Link href="/portfolio">Portafolio</Link>
     </div>
     <div className="footer-copy-right">
-      © {new Date().getFullYear()} Yonathan Gutierrez R. Todos los derechos
-      reservados.
+      © {new Date().getFullYear()} Yonathan Gutierrez R. Consultoria y desarrollo de productos digitales.
     </div>
-    {/* Render any other components you want to include in the footer here */}
   </footer>
 );
 

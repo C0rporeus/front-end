@@ -1,8 +1,33 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
-const LandingHeader = () => {
+type HeaderMode = "public" | "private";
+
+type LandingHeaderProps = {
+  mode?: HeaderMode;
+  onPrivateLogout?: () => void;
+};
+
+const publicLinks = [
+  { href: "/about", label: "Sobre mi" },
+  { href: "/blog", label: "Blog" },
+  { href: "/portfolio", label: "Portafolio" },
+  { href: "/tools", label: "Herramientas" },
+];
+
+const privateLinks = [
+  { href: "/admin?view=blog", label: "Articulos" },
+  { href: "/admin?view=experiences", label: "Experiencias" },
+  { href: "/admin?view=skills", label: "Capacidades" },
+  { href: "/admin?view=portfolio", label: "Muestras" },
+  { href: "/admin?view=ops", label: "Operaciones" },
+];
+
+const LandingHeader = ({ mode = "public", onPrivateLogout }: LandingHeaderProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const isPrivateMode = mode === "private";
+  const navLinks = isPrivateMode ? privateLinks : publicLinks;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,40 +48,77 @@ const LandingHeader = () => {
     <header
       className={`${
         isScrolled
-          ? "bg-white shadow-lg text-gray-800"
-          : "bg-transparent text-white shadow-none"
-      } fixed top-0 left-0 w-full z-10 transition-all duration-300`}
+          ? "bg-surface-900/95 text-text-primary shadow-soft backdrop-blur-md"
+          : "bg-surface-900/78 text-text-primary shadow-none backdrop-blur-sm"
+      } fixed left-0 top-0 z-50 w-full border-b border-slate-700/60 transition-all duration-300`}
     >
       <nav
         className={`${
-          isScrolled ? "text-gray-800" : "text-white"
-        } container mx-auto px-6 py-3 flex justify-between items-center `}
+          isScrolled ? "text-text-primary" : "text-text-primary"
+        } mx-auto flex min-h-[72px] w-full max-w-7xl items-center justify-between px-4 py-3 md:px-8`}
+        aria-label="Navegacion principal"
       >
         <div
-          className="text-3xl font-bold glitch-logo"
-          data-text="Yonathan G.
-        "
+          className="glitch-logo text-2xl font-bold tracking-tight md:text-3xl"
+          data-text="Yonathan G."
         >
-          <Link href="/">Yonathan G.</Link>
+          <Link href={isPrivateMode ? "/admin" : "/"}>Yonathan G.</Link>
         </div>
-        <div className="flex items-center">
-          <Link href="/about" className="px-4 py-2">
-            Acerca de
-          </Link>
-          <Link href="/portfolio" className="px-4 py-2">
-            Portafolio
-          </Link>
-          <Link href="/tools" className="px-4 py-2">
-            Tools
-          </Link>
-          <Link href="/auth/login" className="px-4 py-2">
-            Login
-          </Link>
-          <Link href="/admin" className="px-4 py-2">
-            Admin
-          </Link>
+
+        <button
+          type="button"
+          className="rounded-md border border-slate-500/60 px-3 py-2 text-sm md:hidden"
+          aria-expanded={isMenuOpen}
+          aria-controls="main-menu"
+          onClick={() => setIsMenuOpen((prev) => !prev)}
+        >
+          Menu
+        </button>
+
+        <div className="hidden items-center gap-1 md:flex">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="rounded-md px-3 py-2 text-sm text-text-secondary hover:bg-surface-800/45 hover:text-text-primary"
+            >
+              {link.label}
+            </Link>
+          ))}
+          {isPrivateMode && (
+            <button
+              type="button"
+              className="ml-2 rounded-md border border-rose-400/45 bg-rose-500/20 px-3 py-2 text-sm font-medium text-rose-100 hover:bg-rose-500/35"
+              onClick={onPrivateLogout}
+            >
+              Cerrar sesion
+            </button>
+          )}
         </div>
       </nav>
+
+      <div id="main-menu" className={`${isMenuOpen ? "block" : "hidden"} border-t border-slate-700/50 md:hidden`}>
+        <div className="mx-auto flex w-full max-w-7xl flex-col px-4 py-3">
+          {navLinks.map((link) => (
+            <Link
+              key={`mobile-${link.href}`}
+              href={link.href}
+              className="rounded-md px-2 py-2 text-text-secondary hover:bg-surface-800/50 hover:text-text-primary"
+            >
+              {link.label}
+            </Link>
+          ))}
+          {isPrivateMode && (
+            <button
+              type="button"
+              className="mt-1 rounded-md border border-rose-400/45 bg-rose-500/20 px-2 py-2 text-left font-medium text-rose-100 hover:bg-rose-500/35"
+              onClick={onPrivateLogout}
+            >
+              Cerrar sesion
+            </button>
+          )}
+        </div>
+      </div>
     </header>
   );
 };

@@ -1,4 +1,5 @@
 import Head from "next/head";
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 
@@ -8,6 +9,7 @@ import {
   listPrivateExperiences,
   updateExperience,
 } from "@/api/experiences";
+import { createSkill, deleteSkill, updateSkill } from "@/api/skills";
 import {
   getOpsAlerts,
   getOpsHealth,
@@ -20,13 +22,64 @@ import {
   OpsSummary,
   getOpsSummary,
 } from "@/api/ops";
+import LandingHeader from "@/components/layout/landing/LandingHeader";
 import { useAuth } from "@/context/auth-context";
 import { Experience, ExperiencePayload } from "@/interfaces/Experience";
 import { formatApiError } from "@/utils/format-api-error";
+import ErrorAlert from "@/components/UI/ErrorAlert";
+
+type AdminView = "blog" | "experiences" | "skills" | "portfolio" | "ops";
+
+function normalizeTag(tag: string): string {
+  return tag.trim().toLowerCase();
+}
+
+function parseTags(value: string): string[] {
+  return value
+    .split(",")
+    .map((tag) => normalizeTag(tag))
+    .filter(Boolean);
+}
+
+function parseImageURLs(value: string): string[] {
+  return value
+    .split(/[\n,]/)
+    .map((url) => url.trim())
+    .filter(Boolean);
+}
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+        return;
+      }
+      reject(new Error("No se pudo leer la imagen"));
+    };
+    reader.onerror = () => reject(new Error("No se pudo leer la imagen"));
+    reader.readAsDataURL(file);
+  });
+}
+
+function resolveAdminView(value: string | undefined): AdminView {
+  if (
+    value === "blog" ||
+    value === "experiences" ||
+    value === "skills" ||
+    value === "portfolio" ||
+    value === "ops"
+  ) {
+    return value;
+  }
+  return "experiences";
+}
 
 export default function AdminPage() {
   const router = useRouter();
   const { isAuthenticated, logout, token } = useAuth();
+  const [isHydrated, setIsHydrated] = useState(false);
   const [items, setItems] = useState<Experience[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -37,18 +90,39 @@ export default function AdminPage() {
   const [opsHistory, setOpsHistory] = useState<OpsHistoryItem[]>([]);
   const [opsSummary, setOpsSummary] = useState<OpsSummary | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [tagsInput, setTagsInput] = useState("");
   const [form, setForm] = useState<ExperiencePayload>({
     title: "",
     summary: "",
     body: "",
+    imageUrls: [],
     tags: [],
     visibility: "public",
   });
+  const viewParam = Array.isArray(router.query.view) ? router.query.view[0] : router.query.view;
+  const activeView = useMemo(() => resolveAdminView(viewParam), [viewParam]);
+  const isContentView = activeView !== "ops";
 
   const sortedItems = useMemo(
     () => [...items].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
     [items]
   );
+  const filteredItems = useMemo(() => {
+    if (activeView === "blog") {
+      return sortedItems.filter((item) => item.tags.map(normalizeTag).includes("blog"));
+    }
+    if (activeView === "skills") {
+      return sortedItems.filter((item) =>
+        item.tags
+          .map(normalizeTag)
+          .some((tag) => tag === "skill" || tag === "skills" || tag.includes("habilidad") || tag.includes("capacidad"))
+      );
+    }
+    if (activeView === "portfolio") {
+      return sortedItems.filter((item) => item.tags.map(normalizeTag).includes("portfolio"));
+    }
+    return sortedItems;
+  }, [activeView, sortedItems]);
 
   const refreshItems = useCallback(async () => {
     if (!token) return;
@@ -83,6 +157,12 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+
     if (!isAuthenticated || !token) {
       router.replace("/auth/login");
       return;
@@ -93,33 +173,70 @@ export default function AdminPage() {
       .finally(() => setLoading(false));
 
     refreshOps().catch((err: unknown) => setError(formatApiError(err, "No se pudo cargar observabilidad")));
-  }, [isAuthenticated, router, token, refreshItems, refreshOps]);
+  }, [isHydrated, isAuthenticated, router, token, refreshItems, refreshOps]);
 
-  if (!isAuthenticated) {
+  if (!isHydrated || !isAuthenticated) {
     return null;
   }
 
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!token) return;
+    if (!token || !isContentView) return;
     setError("");
     try {
-      if (editingId) {
-        await updateExperience(token, editingId, form);
+      const contextTag =
+        activeView === "blog"
+          ? "blog"
+          : activeView === "portfolio"
+            ? "portfolio"
+            : activeView === "skills"
+              ? "skill"
+              : null;
+      const parsedTags = parseTags(tagsInput);
+      const payload: ExperiencePayload = {
+        ...form,
+        tags: contextTag
+          ? Array.from(new Set([...parsedTags, contextTag].map(normalizeTag)))
+          : parsedTags,
+      };
+      if (editingId && activeView === "skills") {
+        await updateSkill(token, editingId, payload);
+      } else if (editingId) {
+        await updateExperience(token, editingId, payload);
+      } else if (activeView === "skills") {
+        await createSkill(token, payload);
       } else {
-        await createExperience(token, form);
+        await createExperience(token, payload);
       }
       setForm({
         title: "",
         summary: "",
         body: "",
+        imageUrls: [],
         tags: [],
         visibility: "public",
       });
+      setTagsInput("");
       setEditingId(null);
       await refreshItems();
     } catch (err: unknown) {
       setError(formatApiError(err, "No fue posible guardar"));
+    }
+  };
+
+  const onUploadImages = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+    try {
+      const uploaded = await Promise.all(Array.from(files).map((file) => fileToDataUrl(file)));
+      setForm((previous) => ({
+        ...previous,
+        imageUrls: Array.from(new Set([...previous.imageUrls, ...uploaded])),
+      }));
+    } catch {
+      setError("No fue posible procesar las imagenes seleccionadas.");
+    } finally {
+      event.target.value = "";
     }
   };
 
@@ -128,167 +245,253 @@ export default function AdminPage() {
       <Head>
         <title>Admin | Portfolio Dev</title>
       </Head>
-      <main className="max-w-4xl mx-auto py-10 px-4 text-gray-800">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Gestion privada del portafolio</h1>
-          <button
-            className="px-3 py-2 bg-gray-800 text-white rounded"
-            onClick={() => {
-              logout();
-              router.push("/");
-            }}
-          >
-            Cerrar sesion
-          </button>
+      <LandingHeader
+        mode="private"
+        onPrivateLogout={() => {
+          logout();
+          router.push("/");
+        }}
+      />
+      <main className="mx-auto max-w-5xl px-4 pb-10 pt-[98px] text-text-primary md:px-8 md:pt-[108px]">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold">Panel privado del portafolio</h1>
+          <p className="mt-2 text-text-secondary">
+            Vista activa:{" "}
+            <span className="font-semibold text-text-primary">
+              {activeView === "blog"
+                ? "Articulos del blog"
+                : activeView === "skills"
+                  ? "Capacidades clave"
+                : activeView === "portfolio"
+                  ? "Muestras de portafolio"
+                  : activeView === "ops"
+                    ? "Operaciones"
+                    : "Experiencias"}
+            </span>
+          </p>
         </div>
 
-        <section className="p-4 border rounded bg-white mb-4">
+        <section className="mb-4 rounded-xl border border-slate-700 bg-surface-800/65 p-4">
           <h2 className="text-xl font-semibold mb-2">Contenido profesional</h2>
-          <p>
-            Aqui podras gestionar experiencias, hitos, articulos y evidencia tecnica del portafolio.
-            Esta version habilita CRUD inicial de experiencias para alimentar el portafolio publico.
+          <p className="text-text-secondary">
+            Gestiona contenido por contexto privado: blog, capacidades, experiencias y portafolio en vistas independientes.
           </p>
         </section>
 
-        {error && <p className="mb-4 text-red-600">{error}</p>}
+        {error && <ErrorAlert message={error} />}
 
-        <section className="p-4 border rounded bg-white mb-4">
-          <h2 className="text-xl font-semibold mb-4">
-            {editingId ? "Editar experiencia" : "Nueva experiencia"}
-          </h2>
-          <form className="grid gap-3" onSubmit={onSubmit}>
-            <input
-              className="border rounded p-2"
-              placeholder="Titulo"
-              value={form.title}
-              onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-              required
-            />
-            <input
-              className="border rounded p-2"
-              placeholder="Resumen"
-              value={form.summary}
-              onChange={(e) => setForm((prev) => ({ ...prev, summary: e.target.value }))}
-            />
-            <textarea
-              className="border rounded p-2"
-              rows={4}
-              placeholder="Detalle"
-              value={form.body}
-              onChange={(e) => setForm((prev) => ({ ...prev, body: e.target.value }))}
-            />
-            <input
-              className="border rounded p-2"
-              placeholder="Tags separados por coma"
-              value={form.tags.join(", ")}
-              onChange={(e) =>
-                setForm((prev) => ({
-                  ...prev,
-                  tags: e.target.value
-                    .split(",")
-                    .map((tag) => tag.trim())
-                    .filter(Boolean),
-                }))
-              }
-            />
-            <select
-              className="border rounded p-2"
-              value={form.visibility}
-              onChange={(e) =>
-                setForm((prev) => ({
-                  ...prev,
-                  visibility: e.target.value === "private" ? "private" : "public",
-                }))
-              }
-            >
-              <option value="public">Publico</option>
-              <option value="private">Privado</option>
-            </select>
-            <div className="flex gap-2">
-              <button className="px-4 py-2 rounded bg-indigo-600 text-white" type="submit">
-                {editingId ? "Actualizar" : "Crear"}
-              </button>
-              {editingId && (
-                <button
-                  type="button"
-                  className="px-4 py-2 rounded bg-gray-300"
-                  onClick={() => {
-                    setEditingId(null);
-                    setForm({
-                      title: "",
-                      summary: "",
-                      body: "",
-                      tags: [],
-                      visibility: "public",
-                    });
-                  }}
-                >
-                  Cancelar
-                </button>
-              )}
-            </div>
-          </form>
-        </section>
-
-        <section className="p-4 border rounded bg-white">
-          <h2 className="text-xl font-semibold mb-3">Experiencias ({items.length})</h2>
-          {loading && <p>Cargando...</p>}
-          {!loading && sortedItems.length === 0 && <p>Aun no hay experiencias.</p>}
-          <div className="grid gap-3">
-            {sortedItems.map((item) => (
-              <article key={item.id} className="p-3 border rounded">
-                <div className="flex justify-between items-start gap-2">
-                  <div>
-                    <h3 className="font-semibold">{item.title}</h3>
-                    <p className="text-sm text-gray-600">{item.summary}</p>
-                    <p className="text-xs mt-2 text-gray-500">
-                      {item.visibility.toUpperCase()} · actualizado {item.updatedAt}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      className="px-2 py-1 rounded bg-amber-500 text-white"
-                      onClick={() => {
-                        setEditingId(item.id);
-                        setForm({
-                          title: item.title,
-                          summary: item.summary,
-                          body: item.body,
-                          tags: item.tags,
-                          visibility: item.visibility,
-                        });
-                      }}
-                    >
-                      Editar
-                    </button>
-                    <button
-                      className="px-2 py-1 rounded bg-red-600 text-white"
-                      onClick={async () => {
-                        if (!token) return;
-                        setError("");
-                        try {
-                          await deleteExperience(token, item.id);
-                          await refreshItems();
-                        } catch (err: unknown) {
-                          setError(formatApiError(err, "No se pudo eliminar"));
-                        }
-                      }}
-                    >
-                      Eliminar
-                    </button>
-                  </div>
+        {isContentView && (
+          <section className="mb-4 rounded-xl border border-slate-700 bg-surface-800/65 p-4">
+            <h2 className="text-xl font-semibold mb-4">
+              {editingId
+                ? "Editar entrada"
+                : activeView === "blog"
+                  ? "Nuevo articulo"
+                  : activeView === "skills"
+                    ? "Nueva capacidad"
+                  : activeView === "portfolio"
+                    ? "Nueva muestra de portafolio"
+                    : "Nueva experiencia"}
+            </h2>
+            <form className="grid gap-3" onSubmit={onSubmit}>
+              <input
+                className="rounded border border-slate-600 bg-surface-900/85 p-2 text-text-primary"
+                placeholder={
+                  activeView === "blog"
+                    ? "Titulo del articulo"
+                    : activeView === "skills"
+                      ? "Titulo de la capacidad"
+                    : activeView === "portfolio"
+                      ? "Titulo de la muestra"
+                      : "Titulo de la experiencia"
+                }
+                value={form.title}
+                onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+                required
+              />
+              <input
+                className="rounded border border-slate-600 bg-surface-900/85 p-2 text-text-primary"
+                placeholder="Resumen ejecutivo"
+                value={form.summary}
+                onChange={(e) => setForm((prev) => ({ ...prev, summary: e.target.value }))}
+              />
+              <textarea
+                className="rounded border border-slate-600 bg-surface-900/85 p-2 text-text-primary"
+                rows={4}
+                placeholder={
+                  activeView === "blog"
+                    ? "Contenido del articulo"
+                    : activeView === "skills"
+                      ? "Detalle de la capacidad, stack o nivel"
+                    : activeView === "portfolio"
+                      ? "Descripcion de la muestra y resultado"
+                      : "Detalle tecnico y resultados"
+                }
+                value={form.body}
+                onChange={(e) => setForm((prev) => ({ ...prev, body: e.target.value }))}
+              />
+              <textarea
+                className="rounded border border-slate-600 bg-surface-900/85 p-2 text-text-primary"
+                rows={3}
+                placeholder="URLs de imagen (separadas por coma o salto de linea)"
+                value={form.imageUrls.join("\n")}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    imageUrls: parseImageURLs(e.target.value),
+                  }))
+                }
+              />
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="rounded border border-dashed border-slate-500 bg-surface-900/65 p-2 text-sm text-text-secondary file:mr-3 file:rounded file:border-0 file:bg-brand-600/35 file:px-3 file:py-1 file:text-text-primary hover:border-brand-400/65"
+                onChange={onUploadImages}
+              />
+              {form.imageUrls.length > 0 && (
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {form.imageUrls.slice(0, 6).map((imageUrl, index) => (
+                    <div key={`${imageUrl}-${index}`} className="overflow-hidden rounded border border-slate-700/80">
+                      <Image
+                        src={imageUrl}
+                        alt={`Vista previa ${index + 1}`}
+                        className="h-24 w-full object-cover"
+                        width={160}
+                        height={96}
+                      />
+                    </div>
+                  ))}
                 </div>
-              </article>
-            ))}
-          </div>
-        </section>
+              )}
+              <input
+                className="rounded border border-slate-600 bg-surface-900/85 p-2 text-text-primary"
+                placeholder="Tags separados por coma"
+                value={tagsInput}
+                onChange={(e) => setTagsInput(e.target.value)}
+              />
+              <select
+                className="rounded border border-slate-600 bg-surface-900/85 p-2 text-text-primary"
+                value={form.visibility}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    visibility: e.target.value === "private" ? "private" : "public",
+                  }))
+                }
+              >
+                <option value="public">Publico</option>
+                <option value="private">Privado</option>
+              </select>
+              <div className="flex gap-2">
+                <button className="px-4 py-2 rounded bg-indigo-600 text-white" type="submit">
+                  {editingId ? "Actualizar" : "Crear"}
+                </button>
+                {editingId && (
+                  <button
+                    type="button"
+                    className="rounded bg-slate-600 px-4 py-2 text-white hover:bg-slate-500"
+                    onClick={() => {
+                      setEditingId(null);
+                      setForm({
+                        title: "",
+                        summary: "",
+                        body: "",
+                        imageUrls: [],
+                        tags: [],
+                        visibility: "public",
+                      });
+                      setTagsInput("");
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                )}
+              </div>
+            </form>
+          </section>
+        )}
 
-        <section className="p-4 border rounded bg-white mt-4">
+        {isContentView && (
+          <section className="rounded-xl border border-slate-700 bg-surface-800/65 p-4">
+            <h2 className="text-xl font-semibold mb-3">
+              {activeView === "blog"
+                ? `Articulos publicados (${filteredItems.length})`
+                : activeView === "skills"
+                  ? `Capacidades publicadas (${filteredItems.length})`
+                : activeView === "portfolio"
+                  ? `Muestras publicadas (${filteredItems.length})`
+                  : `Experiencias publicadas (${filteredItems.length})`}
+            </h2>
+            {loading && <p className="text-text-secondary">Cargando...</p>}
+            {!loading && filteredItems.length === 0 && (
+              <p className="text-text-secondary">Aun no hay contenido registrado en esta vista.</p>
+            )}
+            <div className="grid gap-3">
+              {filteredItems.map((item) => (
+                <article key={item.id} className="rounded-lg border border-slate-700/80 bg-surface-900/60 p-3">
+                  <div className="flex justify-between items-start gap-2">
+                    <div>
+                      <h3 className="font-semibold">{item.title}</h3>
+                      <p className="text-sm text-text-secondary">{item.summary}</p>
+                      <p className="mt-2 text-xs text-text-muted">
+                        {item.visibility.toUpperCase()} · actualizado {item.updatedAt}
+                      </p>
+                      <p className="mt-1 text-xs text-text-muted">
+                        Imagenes: {item.imageUrls?.length ?? 0}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        className="rounded bg-amber-500 px-2 py-1 text-white hover:bg-amber-400"
+                        onClick={() => {
+                          setEditingId(item.id);
+                          setForm({
+                            title: item.title,
+                            summary: item.summary,
+                            body: item.body,
+                            imageUrls: item.imageUrls ?? [],
+                            tags: item.tags,
+                            visibility: item.visibility,
+                          });
+                          setTagsInput(item.tags.join(", "));
+                        }}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        className="rounded bg-red-600 px-2 py-1 text-white hover:bg-red-500"
+                        onClick={async () => {
+                          if (!token) return;
+                          setError("");
+                          try {
+                            if (activeView === "skills") {
+                              await deleteSkill(token, item.id);
+                            } else {
+                              await deleteExperience(token, item.id);
+                            }
+                            await refreshItems();
+                          } catch (err: unknown) {
+                            setError(formatApiError(err, "No se pudo eliminar"));
+                          }
+                        }}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section className="mt-4 rounded-xl border border-slate-700 bg-surface-800/65 p-4">
           <div className="flex justify-between items-center mb-3">
-            <h2 className="text-xl font-semibold">Observabilidad operativa</h2>
+            <h2 className="text-xl font-semibold">Resumen de observabilidad</h2>
             <button
               type="button"
-              className="px-3 py-1 rounded bg-slate-700 text-white text-sm"
+              className="rounded bg-slate-700 px-3 py-1 text-sm text-white hover:bg-slate-600"
               onClick={async () => {
                 setError("");
                 try {
@@ -301,14 +504,19 @@ export default function AdminPage() {
               Refrescar
             </button>
           </div>
-          {opsLoading && <p className="text-sm text-gray-600">Consultando metricas...</p>}
+          {activeView !== "ops" && (
+            <p className="mb-2 text-sm text-text-muted">
+              Esta seccion corresponde a la vista privada de operaciones.
+            </p>
+          )}
+          {opsLoading && <p className="text-sm text-text-secondary">Consultando metricas...</p>}
           {!opsLoading && opsSummary && (
             <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${semaphoreClass(opsSummary.status)}`}>
               Semaforo operativo: {opsSummary.status.toUpperCase()}
             </div>
           )}
           {!opsLoading && opsAlerts && (
-            <p className="text-sm mb-2">
+            <p className="mb-2 text-sm text-text-secondary">
               Estado alertas:{" "}
               <span className="font-semibold uppercase">
                 {opsAlerts.level}
@@ -318,34 +526,34 @@ export default function AdminPage() {
             </p>
           )}
           {!opsLoading && opsMetrics && (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 text-sm">
-              <div className="p-2 border rounded">Requests: {opsMetrics.requestsTotal}</div>
-              <div className="p-2 border rounded">5xx: {opsMetrics.errors5xx}</div>
-              <div className="p-2 border rounded">Auth Failures: {opsMetrics.authFailures}</div>
-              <div className="p-2 border rounded">5xx Rate: {(opsMetrics.errorRate * 100).toFixed(2)}%</div>
-              <div className="p-2 border rounded">
+            <div className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
+              <div className="rounded border border-slate-700 p-2">Requests: {opsMetrics.requestsTotal}</div>
+              <div className="rounded border border-slate-700 p-2">5xx: {opsMetrics.errors5xx}</div>
+              <div className="rounded border border-slate-700 p-2">Auth Failures: {opsMetrics.authFailures}</div>
+              <div className="rounded border border-slate-700 p-2">5xx Rate: {(opsMetrics.errorRate * 100).toFixed(2)}%</div>
+              <div className="rounded border border-slate-700 p-2">
                 Auth Fail Rate: {(opsMetrics.authFailRate * 100).toFixed(2)}%
               </div>
-              <div className="p-2 border rounded">
+              <div className="rounded border border-slate-700 p-2">
                 Started: {new Date(opsMetrics.startedAtUnix * 1000).toLocaleString()}
               </div>
             </div>
           )}
           {!opsLoading && opsMetrics && (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 text-sm mt-3">
-              <div className="p-2 border rounded">Window (s): {opsMetrics.window.seconds}</div>
-              <div className="p-2 border rounded">Window Requests: {opsMetrics.window.requests}</div>
-              <div className="p-2 border rounded">Window 5xx: {opsMetrics.window.errors5xx}</div>
-              <div className="p-2 border rounded">
+            <div className="mt-3 grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
+              <div className="rounded border border-slate-700 p-2">Window (s): {opsMetrics.window.seconds}</div>
+              <div className="rounded border border-slate-700 p-2">Window Requests: {opsMetrics.window.requests}</div>
+              <div className="rounded border border-slate-700 p-2">Window 5xx: {opsMetrics.window.errors5xx}</div>
+              <div className="rounded border border-slate-700 p-2">
                 Window 5xx Rate: {(opsMetrics.window.errorRate * 100).toFixed(2)}%
               </div>
-              <div className="p-2 border rounded">
+              <div className="rounded border border-slate-700 p-2">
                 Window Auth Fail Rate: {(opsMetrics.window.authFailRate * 100).toFixed(2)}%
               </div>
             </div>
           )}
           {!opsLoading && opsHealth && (
-            <div className="mt-3 p-3 border rounded bg-slate-50 text-sm">
+            <div className="mt-3 rounded border border-slate-700 bg-surface-900/70 p-3 text-sm">
               <p className="font-semibold mb-2">Health: {opsHealth.status.toUpperCase()}</p>
               <ul className="list-disc ml-5">
                 {opsHealth.recommendations.map((item) => (
@@ -355,19 +563,19 @@ export default function AdminPage() {
             </div>
           )}
           {!opsLoading && opsSummary && (
-            <div className="mt-3 p-3 border rounded bg-white text-sm grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
-              <div className="p-2 border rounded">Samples: {opsSummary.samples.count}/{opsSummary.samples.size}</div>
-              <div className="p-2 border rounded">OK: {opsSummary.distribution.ok}</div>
-              <div className="p-2 border rounded">WARN: {opsSummary.distribution.warn}</div>
-              <div className="p-2 border rounded">CRITICAL: {opsSummary.distribution.critical}</div>
-              <div className="p-2 border rounded">Avg 5xx: {(opsSummary.averages.errorRate * 100).toFixed(2)}%</div>
-              <div className="p-2 border rounded">
+            <div className="mt-3 grid gap-2 rounded border border-slate-700 bg-surface-900/70 p-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded border border-slate-700 p-2">Samples: {opsSummary.samples.count}/{opsSummary.samples.size}</div>
+              <div className="rounded border border-slate-700 p-2">OK: {opsSummary.distribution.ok}</div>
+              <div className="rounded border border-slate-700 p-2">WARN: {opsSummary.distribution.warn}</div>
+              <div className="rounded border border-slate-700 p-2">CRITICAL: {opsSummary.distribution.critical}</div>
+              <div className="rounded border border-slate-700 p-2">Avg 5xx: {(opsSummary.averages.errorRate * 100).toFixed(2)}%</div>
+              <div className="rounded border border-slate-700 p-2">
                 Avg Auth Fail: {(opsSummary.averages.authFailRate * 100).toFixed(2)}%
               </div>
             </div>
           )}
           {!opsLoading && opsHistory.length > 0 && (
-            <div className="mt-3 p-3 border rounded bg-white text-sm">
+            <div className="mt-3 rounded border border-slate-700 bg-surface-900/70 p-3 text-sm">
               <p className="font-semibold mb-2">Historial reciente de salud</p>
               <div className="max-h-56 overflow-auto">
                 <table className="w-full text-left text-xs">

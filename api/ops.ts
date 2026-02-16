@@ -1,4 +1,5 @@
-import { apiRequest } from "@/api/http-client";
+import { apiAuthRequest } from "@/api/http-client";
+import { API_PRIVATE_OPS_METRICS, API_PRIVATE_OPS_ALERTS, API_PRIVATE_OPS_HEALTH, API_PRIVATE_OPS_HISTORY, API_PRIVATE_OPS_SUMMARY } from "@/api/endpoints";
 
 export type OpsMetrics = {
   startedAtUnix: number;
@@ -72,43 +73,22 @@ export type OpsSummary = {
   currentHealth: OpsHealth;
 };
 
-function authHeaders(token: string) {
-  return {
-    Authorization: `Bearer ${token}`,
-  };
-}
-
 export function getOpsMetrics(token: string) {
-  return apiRequest<OpsMetrics>("/api/private/ops/metrics", {
-    method: "GET",
-    headers: authHeaders(token),
-  });
+  return apiAuthRequest<OpsMetrics>(API_PRIVATE_OPS_METRICS, token, { method: "GET" });
 }
 
 export function getOpsAlerts(token: string) {
-  return apiRequest<OpsAlerts>("/api/private/ops/alerts", {
-    method: "GET",
-    headers: authHeaders(token),
-  });
+  return apiAuthRequest<OpsAlerts>(API_PRIVATE_OPS_ALERTS, token, { method: "GET" });
 }
 
 export function getOpsHealth(token: string) {
-  return apiRequest<OpsHealth>("/api/private/ops/health", {
-    method: "GET",
-    headers: authHeaders(token),
-  });
+  return apiAuthRequest<OpsHealth>(API_PRIVATE_OPS_HEALTH, token, { method: "GET" });
 }
 
 export function getOpsHistory(token: string) {
-  return apiRequest<OpsHistory>("/api/private/ops/history", {
-    method: "GET",
-    headers: authHeaders(token),
-  });
+  return apiAuthRequest<OpsHistory>(API_PRIVATE_OPS_HISTORY, token, { method: "GET" });
 }
 
 export function getOpsSummary(token: string) {
-  return apiRequest<OpsSummary>("/api/private/ops/summary", {
-    method: "GET",
-    headers: authHeaders(token),
-  });
+  return apiAuthRequest<OpsSummary>(API_PRIVATE_OPS_SUMMARY, token, { method: "GET" });
 }

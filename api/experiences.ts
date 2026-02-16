@@ -1,50 +1,64 @@
 import { Experience, ExperiencePayload } from "@/interfaces/Experience";
-import { apiRequest } from "@/api/http-client";
+import { apiRequest, apiAuthRequest } from "@/api/http-client";
+import { getPublicCached, invalidatePublicCache } from "@/api/public-cache";
+import { API_EXPERIENCES, API_PRIVATE_EXPERIENCES } from "@/api/endpoints";
+
+const PUBLIC_EXPERIENCES_CACHE_KEY = "public-experiences";
+
+function normalizeExperience(item: Experience): Experience {
+  return {
+    ...item,
+    imageUrls: Array.isArray(item.imageUrls) ? item.imageUrls : [],
+  };
+}
 
 export async function listPublicExperiences(): Promise<Experience[]> {
-  const data = await apiRequest<{ items: Experience[] }>("/api/experiences", {
-    method: "GET",
-  });
-  return data.items;
+  const data = await getPublicCached<{ items: Experience[] }>(
+    PUBLIC_EXPERIENCES_CACHE_KEY,
+    () =>
+      apiRequest<{ items: Experience[] }>(API_EXPERIENCES, {
+        method: "GET",
+      }),
+    {
+      ttlMs: 60_000,
+    },
+  );
+  return data.items.map(normalizeExperience);
+}
+
+export function clearPublicExperiencesCache() {
+  invalidatePublicCache([PUBLIC_EXPERIENCES_CACHE_KEY]);
 }
 
 export async function listPrivateExperiences(token: string): Promise<Experience[]> {
-  const data = await apiRequest<{ items: Experience[] }>("/api/private/experiences", {
+  const data = await apiAuthRequest<{ items: Experience[] }>(API_PRIVATE_EXPERIENCES, token, {
     method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
   });
-  return data.items;
+  return data.items.map(normalizeExperience);
 }
 
-export function createExperience(token: string, payload: ExperiencePayload) {
-  return apiRequest<Experience>("/api/private/experiences", {
+export async function createExperience(token: string, payload: ExperiencePayload) {
+  const created = await apiAuthRequest<Experience>(API_PRIVATE_EXPERIENCES, token, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
     body: JSON.stringify(payload),
   });
+  clearPublicExperiencesCache();
+  return normalizeExperience(created);
 }
 
-export function updateExperience(token: string, id: string, payload: ExperiencePayload) {
-  return apiRequest<Experience>(`/api/private/experiences/${id}`, {
+export async function updateExperience(token: string, id: string, payload: ExperiencePayload) {
+  const updated = await apiAuthRequest<Experience>(`${API_PRIVATE_EXPERIENCES}/${id}`, token, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
     body: JSON.stringify(payload),
   });
+  clearPublicExperiencesCache();
+  return normalizeExperience(updated);
 }
 
-export function deleteExperience(token: string, id: string) {
-  return apiRequest<{ deleted: boolean; id: string }>(`/api/private/experiences/${id}`, {
+export async function deleteExperience(token: string, id: string) {
+  const result = await apiAuthRequest<{ deleted: boolean; id: string }>(`${API_PRIVATE_EXPERIENCES}/${id}`, token, {
     method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
   });
+  clearPublicExperiencesCache();
+  return result;
 }

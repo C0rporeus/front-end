@@ -1,4 +1,5 @@
 import { apiRequest } from "@/api/http-client";
+import { API_LOGIN, API_REGISTER } from "@/api/endpoints";
 
 type AuthPayload = {
   email: string;
@@ -25,11 +26,11 @@ async function requestAuth(path: string, payload: AuthPayload): Promise<AuthSucc
 }
 
 async function loginUser(credentials: AuthPayload): Promise<AuthSuccess> {
-  return requestAuth("/api/login", credentials);
+  return requestAuth(API_LOGIN, credentials);
 }
 
 async function registerUser(user: AuthPayload): Promise<AuthSuccess> {
-  return requestAuth("/api/register", user);
+  return requestAuth(API_REGISTER, user);
 }
 
 export { loginUser, registerUser };
