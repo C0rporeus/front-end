@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { listPublicExperiences } from "@/api/experiences";
 import LandingHeader from "@/components/layout/landing/LandingHeader";
 import { Experience } from "@/interfaces/Experience";
+import RichTextViewer from "@/components/UI/RichTextViewer";
 
 const normalizeText = (value: string) =>
   value
@@ -113,7 +114,7 @@ export default function PortfolioPage() {
               )}
               <h2 className="mb-2 text-xl font-semibold">{item.title}</h2>
               <p className="mb-2 text-text-secondary">{item.summary}</p>
-              <p className="text-sm text-text-muted">{item.body}</p>
+              <RichTextViewer content={item.body} className="text-sm text-text-muted" />
               {item.tags.length > 0 && (
                 <p className="mt-3 text-xs text-text-muted">Tags: {item.tags.join(", ")}</p>
               )}

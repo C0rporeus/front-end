@@ -4,6 +4,7 @@
 @import url("landing/LandingSkills.css");
 @import url("landing/LandingFooter.css");
 @import url("common/ContactForm.css");
+@import url("prose-dark.css");
 
 @tailwind base;
 @tailwind components;

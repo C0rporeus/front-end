@@ -8,6 +8,8 @@ import { listPublicExperiences } from "@/api/experiences";
 import LandingHeader from "@/components/layout/landing/LandingHeader";
 import { Experience } from "@/interfaces/Experience";
 import ErrorAlert from "@/components/UI/ErrorAlert";
+import RichTextViewer from "@/components/UI/RichTextViewer";
+import { stripHtml } from "@/utils/html-content";
 
 const BLOG_TAGS = ["blog", "articulo", "article", "post", "entrada"];
 
@@ -151,7 +153,7 @@ export default function BlogDetailPage() {
                   </div>
                 )}
 
-                <div className="mb-6 whitespace-pre-line text-text-secondary">{article.body}</div>
+                <RichTextViewer content={article.body} className="mb-6 text-text-secondary" />
 
                 {article.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2">
@@ -187,7 +189,7 @@ export default function BlogDetailPage() {
                     <article key={item.id} className="public-card">
                       <h3 className="mb-2 text-lg font-semibold leading-tight">{item.title}</h3>
                       <p className="mb-3 text-sm text-text-secondary">
-                        {item.summary?.trim() || item.body?.trim() || "Articulo en actualizacion."}
+                        {item.summary?.trim() || stripHtml(item.body ?? "").trim() || "Articulo en actualizacion."}
                       </p>
                       <div className="mb-4 flex flex-wrap gap-2">
                         {item.tags.slice(0, 4).map((tag) => (

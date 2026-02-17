@@ -1,7 +1,20 @@
+import dynamic from "next/dynamic";
 import Head from "next/head";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
+
+const RichTextEditor = dynamic(
+  () => import("@/components/UI/RichTextEditor"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[160px] items-center justify-center rounded border border-slate-600 bg-surface-900/85">
+        <p className="text-sm text-text-muted">Cargando editor...</p>
+      </div>
+    ),
+  }
+);
 
 import {
   createExperience,
@@ -315,9 +328,9 @@ export default function AdminPage() {
                 value={form.summary}
                 onChange={(e) => setForm((prev) => ({ ...prev, summary: e.target.value }))}
               />
-              <textarea
-                className="rounded border border-slate-600 bg-surface-900/85 p-2 text-text-primary"
-                rows={4}
+              <RichTextEditor
+                value={form.body}
+                onChange={(html) => setForm((prev) => ({ ...prev, body: html }))}
                 placeholder={
                   activeView === "blog"
                     ? "Contenido del articulo"
@@ -327,8 +340,6 @@ export default function AdminPage() {
                       ? "Descripcion de la muestra y resultado"
                       : "Detalle tecnico y resultados"
                 }
-                value={form.body}
-                onChange={(e) => setForm((prev) => ({ ...prev, body: e.target.value }))}
               />
               <textarea
                 className="rounded border border-slate-600 bg-surface-900/85 p-2 text-text-primary"
@@ -592,8 +603,8 @@ export default function AdminPage() {
                     {[...opsHistory]
                       .reverse()
                       .slice(0, 20)
-                      .map((item) => (
-                        <tr key={`${item.timestampUnix}-${item.status}`} className="border-b last:border-b-0">
+                      .map((item, idx) => (
+                        <tr key={`${item.timestampUnix}-${item.status}-${idx}`} className="border-b last:border-b-0">
                           <td className="py-1">{new Date(item.timestampUnix * 1000).toLocaleTimeString()}</td>
                           <td className="py-1 uppercase">{item.status}</td>
                           <td className="py-1">{item.scope}</td>

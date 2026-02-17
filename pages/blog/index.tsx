@@ -6,6 +6,7 @@ import LandingHeader from "@/components/layout/landing/LandingHeader";
 import { listPublicExperiences } from "@/api/experiences";
 import { Experience } from "@/interfaces/Experience";
 import ErrorAlert from "@/components/UI/ErrorAlert";
+import { stripHtml } from "@/utils/html-content";
 
 const BLOG_TAGS = ["blog", "articulo", "article", "post", "entrada"];
 const BLOG_KEYWORDS = ["blog", "articulo", "article", "post", "entrada", "editorial"];
@@ -129,7 +130,7 @@ export default function BlogPage() {
 
                     <h2 className="mb-2 text-xl font-semibold leading-tight md:text-2xl">{post.title}</h2>
                     <p className="mb-4 text-text-secondary">
-                      {post.summary?.trim() || post.body?.trim() || "Articulo en actualizacion."}
+                      {post.summary?.trim() || stripHtml(post.body ?? "").trim() || "Articulo en actualizacion."}
                     </p>
 
                     {post.tags.length > 0 && (

@@ -13,6 +13,7 @@ import { listPublicSkills } from "@/api/skills";
 import { Experience } from "@/interfaces/Experience";
 import { Skill } from "@/interfaces/Skill";
 import { SliderItem } from "@/components/UI/Slider";
+import { stripHtml } from "@/utils/html-content";
 
 const normalizeText = (value: string) =>
   value
@@ -31,7 +32,7 @@ type SliderMappable = {
 const mapToSliderItem = (item: SliderMappable, urlPrefix: string, ctaLabel: string): SliderItem => ({
   id: item.id,
   title: item.title,
-  description: item.summary?.trim() || item.body?.trim() || "Contenido en actualizacion.",
+  description: item.summary?.trim() || stripHtml(item.body ?? "").trim() || "Contenido en actualizacion.",
   image: item.imageUrls?.[0] ?? "",
   url: `${urlPrefix}${item.id}`,
   ctaLabel,
