@@ -7,6 +7,11 @@ module.exports = {
     "api/**/*.{ts,tsx}",
     "utils/**/*.{ts,tsx}",
     "components/common/ContactForm.tsx",
+    "components/tools/**/*.{ts,tsx}",
+    "!components/tools/ToolsLayout.tsx",
+    "!components/tools/ToolsOverviewGrid.tsx",
+    "!components/tools/ToolsSidebar.tsx",
+    "!components/tools/tools-config.ts",
     "!**/*.test.{ts,tsx}",
     "!**/index.ts",
   ],
@@ -20,6 +25,7 @@ module.exports = {
   },
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/$1",
+    "\\.(css)$": "<rootDir>/__mocks__/styleMock.js",
   },
   transform: {
     "^.+\\.(ts|tsx)$": [
