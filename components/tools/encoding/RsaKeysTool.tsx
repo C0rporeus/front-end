@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ErrorAlert from "@/components/UI/ErrorAlert";
 import ToolButton from "@/components/UI/ToolButton";
+import ToolOutput from "@/components/UI/ToolOutput";
 import { ToolSelect } from "@/components/UI/ToolInput";
 
 type KeySize = 2048 | 4096;
@@ -78,18 +79,18 @@ const RsaKeysTool = () => {
         {publicKey && (
           <div className="mb-4">
             <h3 className="mb-1 text-sm font-semibold text-text-secondary">Clave Publica (SPKI/PEM)</h3>
-            <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-all rounded-lg border border-slate-600/80 bg-surface-900/80 p-3 text-text-secondary">
+            <ToolOutput className="max-h-48 overflow-auto whitespace-pre-wrap break-all">
               {publicKey}
-            </pre>
+            </ToolOutput>
           </div>
         )}
 
         {privateKey && (
           <div>
             <h3 className="mb-1 text-sm font-semibold text-text-secondary">Clave Privada (PKCS8/PEM)</h3>
-            <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-all rounded-lg border border-slate-600/80 bg-surface-900/80 p-3 text-text-secondary">
+            <ToolOutput className="max-h-48 overflow-auto whitespace-pre-wrap break-all">
               {privateKey}
-            </pre>
+            </ToolOutput>
           </div>
         )}
       </div>

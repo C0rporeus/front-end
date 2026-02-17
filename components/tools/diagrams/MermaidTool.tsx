@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import ErrorAlert from "@/components/UI/ErrorAlert";
+import ToolOutput from "@/components/UI/ToolOutput";
 import { ToolTextarea } from "@/components/UI/ToolInput";
 
 const DEFAULT_DIAGRAM = `graph TD
@@ -88,14 +89,15 @@ const MermaidTool = () => {
           {!mermaidLoaded ? (
             <p className="py-8 text-center text-text-muted">Cargando motor Mermaid...</p>
           ) : svg ? (
-            <div
-              className="flex min-h-[200px] items-center justify-center overflow-auto rounded-lg border border-slate-600/80 bg-surface-900/80 p-4"
+            <ToolOutput
+              as="div"
+              className="flex min-h-[200px] items-center justify-center overflow-auto p-4"
               dangerouslySetInnerHTML={{ __html: svg }}
             />
           ) : (
-            <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-slate-600/80 bg-surface-900/80 p-4">
+            <ToolOutput as="div" className="flex min-h-[200px] items-center justify-center p-4">
               <p className="text-text-muted">Escribe un diagrama para ver la vista previa</p>
-            </div>
+            </ToolOutput>
           )}
         </div>
       </div>

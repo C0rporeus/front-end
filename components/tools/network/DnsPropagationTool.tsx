@@ -3,6 +3,7 @@ import { checkDnsPropagation } from "@/api/tools";
 import { formatApiError } from "@/utils/format-api-error";
 import ErrorAlert from "@/components/UI/ErrorAlert";
 import ToolButton from "@/components/UI/ToolButton";
+import ToolOutput from "@/components/UI/ToolOutput";
 import { ToolInput, ToolSelect } from "@/components/UI/ToolInput";
 
 const RECORD_TYPES = ["A", "AAAA", "CNAME", "MX", "NS", "TXT"] as const;
@@ -78,15 +79,15 @@ const DnsPropagationTool = () => {
               <span>Registros: <strong className="text-text-primary">{result.records?.length ?? 0}</strong></span>
             </div>
             {result.records && result.records.length > 0 ? (
-              <ul className="space-y-1 rounded-lg border border-slate-600/80 bg-surface-900/80 p-3">
+              <ToolOutput as="ul" className="space-y-1">
                 {result.records.map((record, index) => (
                   <li key={index} className="font-mono text-sm text-text-primary">{record}</li>
                 ))}
-              </ul>
+              </ToolOutput>
             ) : (
-              <p className="rounded-lg border border-slate-600/80 bg-surface-900/80 p-3 text-text-muted">
+              <ToolOutput as="p" className="text-text-muted">
                 No se encontraron registros {result.recordType} para este dominio.
-              </p>
+              </ToolOutput>
             )}
           </div>
         )}

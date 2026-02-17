@@ -3,6 +3,7 @@ import { encodeBase64, decodeBase64 } from "@/api/tools";
 import { formatApiError } from "@/utils/format-api-error";
 import ErrorAlert from "@/components/UI/ErrorAlert";
 import ToolButton from "@/components/UI/ToolButton";
+import ToolOutput from "@/components/UI/ToolOutput";
 import { ToolTextarea } from "@/components/UI/ToolInput";
 
 const Base64Tool = () => {
@@ -53,9 +54,9 @@ const Base64Tool = () => {
             Decodificar
           </ToolButton>
         </div>
-        <pre className="whitespace-pre-wrap break-all rounded-lg border border-slate-600/80 bg-surface-900/80 p-3 text-text-secondary">
+        <ToolOutput className="whitespace-pre-wrap break-all">
           {output}
-        </pre>
+        </ToolOutput>
       </div>
     </section>
   );

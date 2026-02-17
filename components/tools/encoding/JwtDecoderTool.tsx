@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import ErrorAlert from "@/components/UI/ErrorAlert";
 import ToolButton from "@/components/UI/ToolButton";
+import ToolOutput from "@/components/UI/ToolOutput";
 import { ToolTextarea } from "@/components/UI/ToolInput";
 
 type JwtParts = {
@@ -208,9 +209,9 @@ const JwtDecoderTool = () => {
           {/* Raw JSON */}
           <div className="public-card">
             <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-text-muted">JSON completo</h2>
-            <pre className="whitespace-pre-wrap break-all rounded-lg border border-slate-600/80 bg-surface-900/80 p-3 font-mono text-sm text-text-secondary">
+            <ToolOutput className="whitespace-pre-wrap break-all font-mono text-sm">
 {JSON.stringify({ header: decoded.header, payload: decoded.payload }, null, 2)}
-            </pre>
+            </ToolOutput>
           </div>
 
           {/* Signature */}
@@ -219,9 +220,9 @@ const JwtDecoderTool = () => {
             <p className="mb-2 text-xs text-text-muted">
               La firma no se puede verificar sin la clave secreta. Se muestra el segmento raw en base64url.
             </p>
-            <pre className="whitespace-pre-wrap break-all rounded-lg border border-slate-600/80 bg-surface-900/80 p-3 font-mono text-sm text-text-secondary">
+            <ToolOutput className="whitespace-pre-wrap break-all font-mono text-sm">
               {decoded.signature}
-            </pre>
+            </ToolOutput>
           </div>
         </div>
       )}

@@ -3,6 +3,7 @@ import { generateSelfSignedCert } from "@/api/tools";
 import { formatApiError } from "@/utils/format-api-error";
 import ErrorAlert from "@/components/UI/ErrorAlert";
 import ToolButton from "@/components/UI/ToolButton";
+import ToolOutput from "@/components/UI/ToolOutput";
 import { ToolInput } from "@/components/UI/ToolInput";
 
 const CertsTool = () => {
@@ -71,9 +72,9 @@ const CertsTool = () => {
         <ToolButton className="mb-3" onClick={handleGenerate}>
           Generar Certificado
         </ToolButton>
-        <pre className="max-h-80 overflow-auto whitespace-pre-wrap break-all rounded-lg border border-slate-600/80 bg-surface-900/80 p-3 text-text-secondary">
+        <ToolOutput className="max-h-80 overflow-auto whitespace-pre-wrap break-all">
           {output}
-        </pre>
+        </ToolOutput>
       </div>
     </section>
   );

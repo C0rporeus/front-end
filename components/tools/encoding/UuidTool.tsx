@@ -3,6 +3,7 @@ import { generateUUIDv4 } from "@/api/tools";
 import { formatApiError } from "@/utils/format-api-error";
 import ErrorAlert from "@/components/UI/ErrorAlert";
 import ToolButton from "@/components/UI/ToolButton";
+import ToolOutput from "@/components/UI/ToolOutput";
 
 const UuidTool = () => {
   const [output, setOutput] = useState("");
@@ -29,9 +30,9 @@ const UuidTool = () => {
         <ToolButton className="mb-3" onClick={handleGenerate}>
           Generar UUIDv4
         </ToolButton>
-        <pre className="rounded-lg border border-slate-600/80 bg-surface-900/80 p-3 text-text-secondary">
+        <ToolOutput>
           {output}
-        </pre>
+        </ToolOutput>
       </div>
     </section>
   );
