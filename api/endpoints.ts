@@ -2,10 +2,13 @@
 export const API_LOGIN = "/api/login";
 export const API_REGISTER = "/api/register";
 
+export const API_CONTACT = "/api/contact";
 export const API_EXPERIENCES = "/api/experiences";
 export const API_SKILLS = "/api/skills";
 
 // Private endpoints (require Bearer token)
+export const API_PRIVATE_ME = "/api/private/me";
+export const API_PRIVATE_REFRESH = "/api/private/refresh";
 export const API_PRIVATE_EXPERIENCES = "/api/private/experiences";
 export const API_PRIVATE_SKILLS = "/api/private/skills";
 

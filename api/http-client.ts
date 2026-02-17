@@ -36,6 +36,9 @@ export async function apiRequest<T>(path: string, options?: RequestInit): Promis
   const data = (await safeJson(response)) as ApiErrorPayload & T;
 
   if (!response.ok) {
+    if (response.status === 401 && typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("auth:expired"));
+    }
     throw new ApiClientError(data.message || "No fue posible procesar la solicitud", {
       code: data.code,
       details: data.details,

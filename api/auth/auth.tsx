@@ -1,5 +1,5 @@
-import { apiRequest } from "@/api/http-client";
-import { API_LOGIN, API_REGISTER } from "@/api/endpoints";
+import { apiRequest, apiAuthRequest } from "@/api/http-client";
+import { API_LOGIN, API_REGISTER, API_PRIVATE_REFRESH } from "@/api/endpoints";
 
 type AuthPayload = {
   email: string;
@@ -33,4 +33,10 @@ async function registerUser(user: AuthPayload): Promise<AuthSuccess> {
   return requestAuth(API_REGISTER, user);
 }
 
-export { loginUser, registerUser };
+async function refreshToken(token: string): Promise<AuthSuccess> {
+  return apiAuthRequest<AuthSuccess>(API_PRIVATE_REFRESH, token, {
+    method: "POST",
+  });
+}
+
+export { loginUser, registerUser, refreshToken };
