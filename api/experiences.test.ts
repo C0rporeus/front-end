@@ -54,7 +54,7 @@ describe("experiences api", () => {
     });
     global.fetch = fetchMock as unknown as typeof fetch;
 
-    const payload = { title: "a", summary: "b", body: "c", tags: ["x"], visibility: "public" as const };
+    const payload = { title: "a", summary: "b", body: "c", tags: ["x"], imageUrls: [], visibility: "public" as const };
     await createExperience("token-x", payload);
     await updateExperience("token-x", "id-1", payload);
     await deleteExperience("token-x", "id-1");

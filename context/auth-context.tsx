@@ -36,8 +36,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     tokenRef.current = token;
   }, [token]);
 
+  const isRefreshingRef = useRef(false);
+
   useEffect(() => {
-    const handleExpired = () => logout();
+    const handleExpired = () => {
+      if (!isRefreshingRef.current) logout();
+    };
     window.addEventListener("auth:expired", handleExpired);
     return () => window.removeEventListener("auth:expired", handleExpired);
   }, [logout]);
@@ -45,32 +49,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const REFRESH_CHECK_MS = 60_000;
     const REFRESH_THRESHOLD_MS = 30 * 60_000;
+    let cancelled = false;
 
     const checkAndRefresh = async () => {
+      if (isRefreshingRef.current) return;
       const current = tokenRef.current;
       if (!current) return;
 
       try {
-        const [, payload] = current.split(".");
-        const decoded = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
-        const expiresAt = (decoded.exp ?? 0) * 1000;
-        const remaining = expiresAt - Date.now();
+        const parts = current.split(".");
+        if (parts.length !== 3) return;
+        const decoded = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
+        if (typeof decoded.exp !== "number") return;
+        const remaining = decoded.exp * 1000 - Date.now();
 
         if (remaining > 0 && remaining < REFRESH_THRESHOLD_MS) {
-          const result = await refreshToken(current);
-          if (result.token) {
-            setTokenValue(result.token);
+          isRefreshingRef.current = true;
+          try {
+            const result = await refreshToken(current);
+            if (!cancelled && result.token) {
+              setTokenValue(result.token);
+            }
+          } catch {
+            if (!cancelled) logout();
+          } finally {
+            isRefreshingRef.current = false;
           }
         } else if (remaining <= 0) {
           logout();
         }
       } catch {
-        /* token decode failed — ignore until next check */
+        /* token decode failed — skip until next check */
       }
     };
 
     const interval = setInterval(checkAndRefresh, REFRESH_CHECK_MS);
-    return () => clearInterval(interval);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, [setTokenValue, logout]);
 
   const contextValue = useMemo(

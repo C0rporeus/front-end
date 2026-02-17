@@ -9,6 +9,7 @@ import { registerUser } from "@/api/auth/auth";
 import ErrorAlert from "@/components/UI/ErrorAlert";
 import { useAuth } from "@/context/auth-context";
 import { formatApiError } from "@/utils/format-api-error";
+import { isValidPassword, isValidEmail } from "@/utils/input-validation";
 
 const Register = () => {
   const router = useRouter();
@@ -20,6 +21,16 @@ const Register = () => {
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
+
+    if (!isValidEmail(email.trim())) {
+      setError("Formato de email invalido");
+      return;
+    }
+    if (!isValidPassword(password)) {
+      setError("La contrasena debe tener al menos 8 caracteres, una mayuscula, una minuscula y un numero");
+      return;
+    }
+
     try {
       const result = await registerUser({
         email,
@@ -60,6 +71,7 @@ const Register = () => {
                 type="email"
                 autoComplete="email"
                 required
+                maxLength={254}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="block w-full rounded-md border border-slate-600 bg-surface-900/85 px-3 py-2 text-text-primary placeholder:text-text-muted"
@@ -74,12 +86,14 @@ const Register = () => {
                 id="password"
                 name="password"
                 type="password"
-                autoComplete="current-password"
+                autoComplete="new-password"
                 required
+                minLength={8}
+                maxLength={128}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="block w-full rounded-md border border-slate-600 bg-surface-900/85 px-3 py-2 text-text-primary placeholder:text-text-muted"
-                placeholder="Define una contrasena segura"
+                placeholder="Min 8 chars, mayuscula, minuscula, numero"
               />
             </div>
             {error && (

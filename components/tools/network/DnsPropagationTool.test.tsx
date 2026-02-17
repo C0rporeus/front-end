@@ -47,6 +47,29 @@ describe("DnsPropagationTool", () => {
     });
   });
 
+  test("changing record type select sends correct type to API", async () => {
+    mockCheckDnsPropagation.mockResolvedValue({
+      domain: "example.com",
+      recordType: "MX",
+      records: ["10 mail.example.com"],
+      timestamp: "2024-01-01T00:00:00Z",
+    });
+
+    render(<DnsPropagationTool />);
+    const domainInput = screen.getByPlaceholderText("ejemplo.com");
+    const select = screen.getByRole("combobox");
+    const consultButton = screen.getByRole("button", { name: /Consultar/i });
+
+    fireEvent.change(domainInput, { target: { value: "example.com" } });
+    fireEvent.change(select, { target: { value: "MX" } });
+    fireEvent.click(consultButton);
+
+    await waitFor(() => {
+      expect(mockCheckDnsPropagation).toHaveBeenCalledWith("example.com", "MX");
+      expect(screen.getByText("10 mail.example.com")).toBeInTheDocument();
+    });
+  });
+
   test("empty records: mock with empty records array, verify No se encontraron message", async () => {
     const mockResult = {
       domain: "example.com",
@@ -58,13 +81,15 @@ describe("DnsPropagationTool", () => {
 
     render(<DnsPropagationTool />);
     const domainInput = screen.getByPlaceholderText("ejemplo.com");
+    const select = screen.getByRole("combobox");
     const consultButton = screen.getByRole("button", { name: /Consultar/i });
 
     fireEvent.change(domainInput, { target: { value: "example.com" } });
+    fireEvent.change(select, { target: { value: "MX" } });
     fireEvent.click(consultButton);
 
     await waitFor(() => {
-      expect(mockCheckDnsPropagation).toHaveBeenCalledWith("example.com", "A");
+      expect(mockCheckDnsPropagation).toHaveBeenCalledWith("example.com", "MX");
       expect(screen.getByText(/No se encontraron registros MX para este dominio/i)).toBeInTheDocument();
     });
   });

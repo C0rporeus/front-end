@@ -11,6 +11,8 @@ const mockCryptoKeyPair = {
   privateKey: {} as CryptoKey,
 };
 
+const originalCrypto = window.crypto;
+
 beforeEach(() => {
   Object.defineProperty(window, "crypto", {
     value: {
@@ -29,6 +31,10 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.clearAllMocks();
+  Object.defineProperty(window, "crypto", {
+    value: originalCrypto,
+    writable: true,
+  });
 });
 
 describe("RsaKeysTool", () => {

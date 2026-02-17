@@ -7,7 +7,7 @@ describe("ContactForm", () => {
   test("renders the contact form", () => {
     render(<ContactForm onSubmit={() => {}} />);
     expect(screen.getByLabelText(/nombre/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/correo electronico/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/mensaje/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Enviar/i })).toBeInTheDocument();
   });
@@ -19,7 +19,7 @@ describe("ContactForm", () => {
     fireEvent.change(screen.getByLabelText(/nombre/i), {
       target: { value: "John Doe" },
     });
-    fireEvent.change(screen.getByLabelText(/email/i), {
+    fireEvent.change(screen.getByLabelText(/correo electronico/i), {
       target: { value: "john@example.com" },
     });
     fireEvent.change(screen.getByLabelText(/mensaje/i), {
@@ -40,7 +40,7 @@ describe("ContactForm", () => {
     render(<ContactForm onSubmit={handleSubmit} />);
     const nameInput = screen.getByLabelText(/nombre/i) as HTMLInputElement;
     fireEvent.change(nameInput, { target: { value: "John Doe" } });
-    const emailInput = screen.getByLabelText(/email/i) as HTMLInputElement;
+    const emailInput = screen.getByLabelText(/correo electronico/i) as HTMLInputElement;
     fireEvent.change(emailInput, { target: { value: "invalid email" } });
     const mensajeInput = screen.getByLabelText(/mensaje/i) as HTMLInputElement;
     fireEvent.change(mensajeInput, { target: { value: "Hola" } });

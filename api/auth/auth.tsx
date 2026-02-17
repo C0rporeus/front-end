@@ -34,9 +34,13 @@ async function registerUser(user: AuthPayload): Promise<AuthSuccess> {
 }
 
 async function refreshToken(token: string): Promise<AuthSuccess> {
-  return apiAuthRequest<AuthSuccess>(API_PRIVATE_REFRESH, token, {
+  const data = await apiAuthRequest<AuthSuccess>(API_PRIVATE_REFRESH, token, {
     method: "POST",
   });
+  if (!data.token) {
+    throw new Error("No fue posible renovar la sesion");
+  }
+  return data;
 }
 
 export { loginUser, registerUser, refreshToken };

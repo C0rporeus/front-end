@@ -62,6 +62,7 @@ const Login = () => {
                 type="email"
                 autoComplete="email"
                 required
+                maxLength={254}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="block min-h-12 w-full rounded-lg border border-slate-600/90 bg-surface-900/90 px-4 py-3 text-lg text-text-primary placeholder:text-text-muted focus:border-brand-400/80"
@@ -78,6 +79,7 @@ const Login = () => {
                 type="password"
                 autoComplete="current-password"
                 required
+                maxLength={128}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="block min-h-12 w-full rounded-lg border border-slate-600/90 bg-surface-900/90 px-4 py-3 text-lg text-text-primary placeholder:text-text-muted focus:border-brand-400/80"

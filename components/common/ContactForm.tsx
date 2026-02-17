@@ -39,6 +39,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSubmit }) => {
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
+          maxLength={100}
           className="form-control"
           aria-invalid={Boolean(errors.name)}
           aria-describedby={errors.name ? "name-error" : undefined}
@@ -53,6 +54,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSubmit }) => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          maxLength={254}
           className="form-control"
           aria-invalid={Boolean(errors.email)}
           aria-describedby={errors.email ? "email-error" : undefined}
@@ -66,6 +68,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSubmit }) => {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           required
+          maxLength={500}
           className="form-control"
           aria-invalid={Boolean(errors.message)}
           aria-describedby={errors.message ? "message-error" : undefined}

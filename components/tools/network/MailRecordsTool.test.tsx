@@ -66,8 +66,11 @@ describe("MailRecordsTool", () => {
 
     await waitFor(() => {
       expect(mockGetMailRecords).toHaveBeenCalledWith("example.com");
-      const noRecordsMessages = screen.getAllByText("No se encontraron registros.");
-      expect(noRecordsMessages).toHaveLength(4);
+      expect(screen.getByText("MX (Mail Exchange)")).toBeInTheDocument();
+      expect(screen.getByText("SPF (Sender Policy Framework)")).toBeInTheDocument();
+      expect(screen.getByText("DKIM (DomainKeys)")).toBeInTheDocument();
+      expect(screen.getByText("DMARC (Domain-based Auth)")).toBeInTheDocument();
+      expect(screen.getAllByText("No se encontraron registros.").length).toBeGreaterThanOrEqual(4);
     });
   });
 

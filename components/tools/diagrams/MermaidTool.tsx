@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import ErrorAlert from "@/components/UI/ErrorAlert";
 import ToolOutput from "@/components/UI/ToolOutput";
 import { ToolTextarea } from "@/components/UI/ToolInput";
+import { sanitizeSvg } from "@/utils/html-content";
 
 const DEFAULT_DIAGRAM = `graph TD
     A[Inicio] --> B{Es valido?}
@@ -51,7 +52,7 @@ const MermaidTool = () => {
         `mermaid-preview-${Date.now()}`,
         code
       );
-      setSvg(rendered);
+      setSvg(sanitizeSvg(rendered));
     } catch {
       setError("Error de sintaxis en el diagrama. Revisa la notacion Mermaid.");
       setSvg("");

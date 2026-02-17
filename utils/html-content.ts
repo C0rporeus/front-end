@@ -25,6 +25,16 @@ export function sanitizeHtml(dirty: string): string {
   });
 }
 
+/** Sanitize SVG content from diagram generators (mermaid, etc.) */
+export function sanitizeSvg(svgString: string): string {
+  if (typeof window === "undefined") return svgString;
+  return DOMPurify.sanitize(svgString, {
+    USE_PROFILES: { svg: true, svgFilters: true },
+    ADD_TAGS: ["foreignObject"],
+    ALLOW_DATA_ATTR: false,
+  });
+}
+
 export function stripHtml(html: string): string {
   if (!html) return "";
   if (!isHtmlContent(html)) return html;

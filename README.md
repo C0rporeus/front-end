@@ -1,34 +1,13 @@
-Frontend del portafolio personal y toolkit tecnico para pares.
+# Frontend — Portfolio Personal
 
-## Getting Started
+Aplicación web con Next.js 16 (Pages Router) + React 19 + TailwindCSS para sitio personal con landing, autenticación, admin, blog y toolkit técnico.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-## Secciones disponibles
-
-- Publico:
-  - `/` landing principal
-  - `/about`
-  - `/portfolio`
-  - `/blog`
-  - `/tools` (base64, uuidv4, certificados)
-- Privado:
-  - `/auth/login`
-  - `/auth/register`
-  - `/admin` (CRUD inicial de experiencias del portafolio)
-  - `/admin` incluye panel de observabilidad (`metrics`, `alerts`, `health`, `history`, `summary`)
+- **Next.js 16** (Pages Router) + **React 19** + **TypeScript**
+- **TailwindCSS** con tokens custom (dark soft theme)
+- **Jest** + React Testing Library (20 test files)
+- Dependencias clave: `@excalidraw/excalidraw`, `mermaid`, TipTap
 
 ## Variables de entorno
 
@@ -36,21 +15,76 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 NEXT_PUBLIC_API_URL=http://localhost:3100
 ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Iniciar
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+```bash
+npm run dev       # Dev server (puerto 3000)
+npm run build     # Build de producción
+npm run lint      # ESLint
+npm run test      # Jest tests
+npm run test:coverage  # Jest con coverage gates
+```
 
-## Learn More
+## Secciones disponibles
 
-To learn more about Next.js, take a look at the following resources:
+### Públicas
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `/` — Landing principal
+- `/about` — Sobre mí
+- `/portfolio` — Portafolio de proyectos
+- `/blog` — Blog con listado y vista de detalle
+- `/tools` — Toolkit técnico (14 herramientas)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+### Autenticación
 
-## Deploy on Vercel
+- `/auth/login` — Login
+- `/auth/register` — Registro
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Admin (requiere JWT)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- `/admin` — Panel de administración (CRUD experiencias, skills, observabilidad)
+
+## Herramientas (14 en 3 categorías)
+
+### Codificación y Criptografía (5)
+
+| Herramienta | Fuente | Ruta |
+|-------------|--------|------|
+| Base64 Encoder/Decoder | Backend API | `/tools/base64` |
+| UUID v4 Generator | Backend API | `/tools/uuid` |
+| Certificados Autofirmados | Backend API | `/tools/certs` |
+| Generador RSA | Web Crypto API (client) | `/tools/rsa-keys` |
+| JWT Decoder | atob() (client) | `/tools/jwt-decoder` |
+
+### Red y DNS (5)
+
+| Herramienta | Fuente | Ruta |
+|-------------|--------|------|
+| Validador de Dominio | Backend API | `/tools/domain-validator` |
+| Propagación DNS | Backend API | `/tools/dns-propagation` |
+| Registros de Correo | Backend API | `/tools/mail-records` |
+| Blacklist Checker | Backend API | `/tools/blacklist` |
+| Calculadora CIDR | Lógica pura (client) | `/tools/cidr` |
+
+### Diagramas (3)
+
+| Herramienta | Fuente | Ruta |
+|-------------|--------|------|
+| Excalidraw | @excalidraw/excalidraw | `/tools/excalidraw` |
+| Mermaid | mermaid.js | `/tools/mermaid` |
+| SQL Visualizer | Client-side | `/tools/sql-visualizer` |
+
+## Testing
+
+```bash
+npm run test           # Ejecutar tests
+npm run test:coverage  # Con coverage gates (85% lines, 90% functions, 70% branches)
+```
+
+## Arquitectura
+
+- `pages/` — Rutas (24 archivos)
+- `components/` — Componentes organizados por dominio (layout, common, tools, UI)
+- `api/` — Módulos de consumo API con tipos y endpoints centralizados
+- `context/` — AuthProvider con refresh proactivo e interceptor 401
+- `utils/` — Utilidades (format-api-error, input-validation, html-content)

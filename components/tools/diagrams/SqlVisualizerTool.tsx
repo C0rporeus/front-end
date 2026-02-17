@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import ErrorAlert from "@/components/UI/ErrorAlert";
 import ToolOutput from "@/components/UI/ToolOutput";
 import { ToolTextarea } from "@/components/UI/ToolInput";
+import { sanitizeSvg } from "@/utils/html-content";
 
 const SAMPLE_SQL = `CREATE TABLE users (
   id INT PRIMARY KEY,
@@ -227,7 +228,7 @@ const SqlVisualizerTool = () => {
         `sql-er-${Date.now()}`,
         mermaidCode
       );
-      setSvg(rendered);
+      setSvg(sanitizeSvg(rendered));
     } catch {
       setError("Error al generar el diagrama. Revisa la estructura SQL.");
       setSvg("");

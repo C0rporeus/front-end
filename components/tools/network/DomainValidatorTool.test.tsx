@@ -65,6 +65,52 @@ describe("DomainValidatorTool", () => {
     });
   });
 
+  test("submit via Enter key triggers resolve", async () => {
+    mockResolveDomain.mockResolvedValue({
+      domain: "enter.com",
+      ipv4: ["1.2.3.4"],
+      ipv6: [],
+      resolved: true,
+    });
+
+    render(<DomainValidatorTool />);
+    const domainInput = screen.getByPlaceholderText("ejemplo.com");
+
+    fireEvent.change(domainInput, { target: { value: "enter.com" } });
+    fireEvent.keyDown(domainInput, { key: "Enter" });
+
+    await waitFor(() => {
+      expect(mockResolveDomain).toHaveBeenCalledWith("enter.com");
+      expect(screen.getByText("1.2.3.4")).toBeInTheDocument();
+    });
+  });
+
+  test("button shows loading text while resolving", async () => {
+    type ResolveResult = { domain: string; ipv4: string[]; ipv6: string[]; resolved: boolean };
+    let resolvePromise: (value: ResolveResult) => void;
+    mockResolveDomain.mockReturnValue(
+      new Promise<ResolveResult>((resolve) => { resolvePromise = resolve; })
+    );
+
+    render(<DomainValidatorTool />);
+    fireEvent.change(screen.getByPlaceholderText("ejemplo.com"), { target: { value: "slow.com" } });
+    fireEvent.click(screen.getByRole("button", { name: /Resolver/i }));
+
+    expect(screen.getByRole("button", { name: /Consultando/i })).toBeDisabled();
+
+    resolvePromise!({ domain: "slow.com", ipv4: [], ipv6: [], resolved: false });
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /Resolver/i })).not.toBeDisabled();
+    });
+  });
+
+  test("empty domain does not trigger API call", async () => {
+    render(<DomainValidatorTool />);
+    fireEvent.click(screen.getByRole("button", { name: /Resolver/i }));
+    expect(mockResolveDomain).not.toHaveBeenCalled();
+  });
+
   test("error: mock rejection, verify ErrorAlert", async () => {
     const mockError = new Error("API Error");
     mockResolveDomain.mockRejectedValue(mockError);

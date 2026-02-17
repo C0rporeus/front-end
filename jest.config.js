@@ -8,7 +8,7 @@ module.exports = {
     "utils/**/*.{ts,tsx}",
     "components/common/ContactForm.tsx",
     "components/tools/**/*.{ts,tsx}",
-    "!components/tools/ToolsLayout.tsx",
+     "!components/tools/ToolsLayout.tsx",
     "!components/tools/ToolsOverviewGrid.tsx",
     "!components/tools/ToolsSidebar.tsx",
     "!components/tools/tools-config.ts",
