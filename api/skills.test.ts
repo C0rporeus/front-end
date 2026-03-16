@@ -47,7 +47,7 @@ describe("skills api", () => {
     expect(Array.isArray(result[0].imageUrls)).toBe(true);
   });
 
-  it("sends bearer token for private list", async () => {
+  it("uses cookie auth for private list", async () => {
     const fetchMock = jest.fn().mockResolvedValue({
       ok: true,
       text: async () => JSON.stringify({ items: [] }),
@@ -57,10 +57,8 @@ describe("skills api", () => {
 
     await listPrivateSkills("tok-123");
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.objectContaining({
-        headers: expect.objectContaining({ Authorization: "Bearer tok-123" }),
-      }),
+      expect.stringContaining("/api/private/skills"),
+      expect.objectContaining({ credentials: "include" }),
     );
   });
 

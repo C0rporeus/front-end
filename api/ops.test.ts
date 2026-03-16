@@ -8,7 +8,7 @@ describe("ops api", () => {
     jest.restoreAllMocks();
   });
 
-  it("calls private ops endpoints with bearer token", async () => {
+  it("calls private ops endpoints with cookie auth", async () => {
     const fetchMock = jest.fn().mockResolvedValue({
       ok: true,
       text: async () => JSON.stringify({ items: [], count: 0 }),
@@ -25,9 +25,7 @@ describe("ops api", () => {
     expect(fetchMock).toHaveBeenCalledTimes(5);
     expect(fetchMock).toHaveBeenCalledWith(
       expect.any(String),
-      expect.objectContaining({
-        headers: expect.objectContaining({ Authorization: "Bearer token-1" }),
-      })
+      expect.objectContaining({ credentials: "include" })
     );
   });
 });

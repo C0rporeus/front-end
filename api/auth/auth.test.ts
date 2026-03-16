@@ -44,7 +44,7 @@ describe("auth api client", () => {
       expect.stringContaining("/api/private/refresh"),
       expect.objectContaining({
         method: "POST",
-        headers: expect.objectContaining({ Authorization: "Bearer old-token" }),
+        credentials: "include",
       }),
     );
   });

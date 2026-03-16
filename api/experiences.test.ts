@@ -29,7 +29,7 @@ describe("experiences api", () => {
     );
   });
 
-  it("sends bearer token for private list", async () => {
+  it("uses cookie auth for private list", async () => {
     const fetchMock = jest.fn().mockResolvedValue({
       ok: true,
       text: async () => JSON.stringify({ items: [] }),
@@ -39,10 +39,8 @@ describe("experiences api", () => {
 
     await listPrivateExperiences("token-x");
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.objectContaining({
-        headers: expect.objectContaining({ Authorization: "Bearer token-x" }),
-      })
+      expect.stringContaining("/api/private/experiences"),
+      expect.objectContaining({ credentials: "include" })
     );
   });
 
