@@ -31,14 +31,14 @@ export function clearPublicExperiencesCache() {
 }
 
 export async function listPrivateExperiences(token: string): Promise<Experience[]> {
-  const data = await apiAuthRequest<{ items: Experience[] }>(API_PRIVATE_EXPERIENCES, token, {
+  const data = await apiAuthRequest<{ items: Experience[] }>(API_PRIVATE_EXPERIENCES, {
     method: "GET",
   });
   return data.items.map(normalizeExperience);
 }
 
 export async function createExperience(token: string, payload: ExperiencePayload) {
-  const created = await apiAuthRequest<Experience>(API_PRIVATE_EXPERIENCES, token, {
+  const created = await apiAuthRequest<Experience>(API_PRIVATE_EXPERIENCES, {
     method: "POST",
     body: JSON.stringify(payload),
   });
@@ -47,7 +47,7 @@ export async function createExperience(token: string, payload: ExperiencePayload
 }
 
 export async function updateExperience(token: string, id: string, payload: ExperiencePayload) {
-  const updated = await apiAuthRequest<Experience>(`${API_PRIVATE_EXPERIENCES}/${id}`, token, {
+  const updated = await apiAuthRequest<Experience>(`${API_PRIVATE_EXPERIENCES}/${id}`, {
     method: "PUT",
     body: JSON.stringify(payload),
   });
@@ -56,7 +56,7 @@ export async function updateExperience(token: string, id: string, payload: Exper
 }
 
 export async function deleteExperience(token: string, id: string) {
-  const result = await apiAuthRequest<{ deleted: boolean; id: string }>(`${API_PRIVATE_EXPERIENCES}/${id}`, token, {
+  const result = await apiAuthRequest<{ deleted: boolean; id: string }>(`${API_PRIVATE_EXPERIENCES}/${id}`, {
     method: "DELETE",
   });
   clearPublicExperiencesCache();

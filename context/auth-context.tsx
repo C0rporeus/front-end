@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { refreshToken } from "@/api/auth/auth";
 
 type AuthContextValue = {
@@ -12,24 +20,43 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 const TOKEN_STORAGE_KEY = "portfolio_auth_token";
 
-function getStoredToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(TOKEN_STORAGE_KEY);
-}
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [token, setToken] = useState<string | null>(getStoredToken);
+  const [token, setToken] = useState<string | null>(null);
 
   const setTokenValue = useCallback((value: string | null) => {
     setToken(value);
     if (value) {
-      window.localStorage.setItem(TOKEN_STORAGE_KEY, value);
+      window.localStorage.setItem(TOKEN_STORAGE_KEY, "true");
       return;
     }
     window.localStorage.removeItem(TOKEN_STORAGE_KEY);
   }, []);
 
-  const logout = useCallback(() => setTokenValue(null), [setTokenValue]);
+  const logout = useCallback(async () => {
+    try {
+      await import("@/api/auth/auth").then((m) => m.logoutUser());
+    } catch {}
+    setTokenValue(null);
+  }, [setTokenValue]);
+
+  // Recuperar sesión al cargar si hay indicio de estar logueado
+  useEffect(() => {
+    let mounted = true;
+    const initAuth = async () => {
+      const hasSession = window.localStorage.getItem(TOKEN_STORAGE_KEY) === "true";
+      if (!hasSession) return;
+      try {
+        const result = await refreshToken("");
+        if (mounted && result.token) {
+          setTokenValue(result.token);
+        }
+      } catch {
+        if (mounted) logout();
+      }
+    };
+    initAuth();
+    return () => { mounted = false; };
+  }, [setTokenValue, logout]);
 
   const tokenRef = useRef(token);
   useEffect(() => {
@@ -59,7 +86,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const parts = current.split(".");
         if (parts.length !== 3) return;
-        const decoded = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
+        const decoded = JSON.parse(
+          atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")),
+        );
         if (typeof decoded.exp !== "number") return;
         const remaining = decoded.exp * 1000 - Date.now();
 
@@ -97,10 +126,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setTokenValue,
       logout,
     }),
-    [token, setTokenValue, logout]
+    [token, setTokenValue, logout],
   );
 
-  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

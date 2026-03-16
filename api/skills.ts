@@ -31,14 +31,14 @@ export function clearPublicSkillsCache() {
 }
 
 export async function listPrivateSkills(token: string): Promise<Skill[]> {
-  const data = await apiAuthRequest<{ items: Skill[] }>(API_PRIVATE_SKILLS, token, {
+  const data = await apiAuthRequest<{ items: Skill[] }>(API_PRIVATE_SKILLS, {
     method: "GET",
   });
   return data.items.map(normalizeSkill);
 }
 
 export async function createSkill(token: string, payload: SkillPayload) {
-  const created = await apiAuthRequest<Skill>(API_PRIVATE_SKILLS, token, {
+  const created = await apiAuthRequest<Skill>(API_PRIVATE_SKILLS, {
     method: "POST",
     body: JSON.stringify(payload),
   });
@@ -47,7 +47,7 @@ export async function createSkill(token: string, payload: SkillPayload) {
 }
 
 export async function updateSkill(token: string, id: string, payload: SkillPayload) {
-  const updated = await apiAuthRequest<Skill>(`${API_PRIVATE_SKILLS}/${id}`, token, {
+  const updated = await apiAuthRequest<Skill>(`${API_PRIVATE_SKILLS}/${id}`, {
     method: "PUT",
     body: JSON.stringify(payload),
   });
@@ -56,7 +56,7 @@ export async function updateSkill(token: string, id: string, payload: SkillPaylo
 }
 
 export async function deleteSkill(token: string, id: string) {
-  const result = await apiAuthRequest<{ deleted: boolean; id: string }>(`${API_PRIVATE_SKILLS}/${id}`, token, {
+  const result = await apiAuthRequest<{ deleted: boolean; id: string }>(`${API_PRIVATE_SKILLS}/${id}`, {
     method: "DELETE",
   });
   clearPublicSkillsCache();

@@ -34,7 +34,7 @@ async function registerUser(user: AuthPayload): Promise<AuthSuccess> {
 }
 
 async function refreshToken(token: string): Promise<AuthSuccess> {
-  const data = await apiAuthRequest<AuthSuccess>(API_PRIVATE_REFRESH, token, {
+  const data = await apiAuthRequest<AuthSuccess>(API_PRIVATE_REFRESH, {
     method: "POST",
   });
   if (!data.token) {
@@ -43,4 +43,10 @@ async function refreshToken(token: string): Promise<AuthSuccess> {
   return data;
 }
 
-export { loginUser, registerUser, refreshToken };
+async function logoutUser(): Promise<{ message: string }> {
+  return apiRequest<{ message: string }>("/api/logout", {
+    method: "POST",
+  });
+}
+
+export { loginUser, registerUser, refreshToken, logoutUser };

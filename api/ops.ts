@@ -74,21 +74,21 @@ export type OpsSummary = {
 };
 
 export function getOpsMetrics(token: string) {
-  return apiAuthRequest<OpsMetrics>(API_PRIVATE_OPS_METRICS, token, { method: "GET" });
+  return apiAuthRequest<OpsMetrics>(API_PRIVATE_OPS_METRICS, { method: "GET" });
 }
 
 export function getOpsAlerts(token: string) {
-  return apiAuthRequest<OpsAlerts>(API_PRIVATE_OPS_ALERTS, token, { method: "GET" });
+  return apiAuthRequest<OpsAlerts>(API_PRIVATE_OPS_ALERTS, { method: "GET" });
 }
 
 export function getOpsHealth(token: string) {
-  return apiAuthRequest<OpsHealth>(API_PRIVATE_OPS_HEALTH, token, { method: "GET" });
+  return apiAuthRequest<OpsHealth>(API_PRIVATE_OPS_HEALTH, { method: "GET" });
 }
 
 export function getOpsHistory(token: string) {
-  return apiAuthRequest<OpsHistory>(API_PRIVATE_OPS_HISTORY, token, { method: "GET" });
+  return apiAuthRequest<OpsHistory>(API_PRIVATE_OPS_HISTORY, { method: "GET" });
 }
 
 export function getOpsSummary(token: string) {
-  return apiAuthRequest<OpsSummary>(API_PRIVATE_OPS_SUMMARY, token, { method: "GET" });
+  return apiAuthRequest<OpsSummary>(API_PRIVATE_OPS_SUMMARY, { method: "GET" });
 }
