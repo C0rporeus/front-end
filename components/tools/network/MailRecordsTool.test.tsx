@@ -23,9 +23,9 @@ describe("MailRecordsTool", () => {
     const mockResult = {
       domain: "example.com",
       mx: ["10 mail.example.com", "20 mail2.example.com"],
-      spf: ['v=spf1 include:_spf.example.com ~all'],
-      dkim: ['v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC'],
-      dmarc: ['v=DMARC1; p=none; rua=mailto:dmarc@example.com'],
+      spf: ["v=spf1 include:_spf.example.com ~all"],
+      dkim: ["v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC"],
+      dmarc: ["v=DMARC1; p=none; rua=mailto:dmarc@example.com"],
     };
     mockGetMailRecords.mockResolvedValue(mockResult);
 
