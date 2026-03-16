@@ -1,0 +1,14 @@
+[
+  {
+    "origin": [
+      "http://localhost:3000",
+      "https://porfolio-58ea0.web.app",
+      "https://porfolio-58ea0.firebaseapp.com",
+      "https://www.yonathangutierrez.dev",
+      "https://yonathangutierrez.dev"
+    ],
+    "method": ["GET", "PUT", "POST", "DELETE", "HEAD"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": ["Content-Type", "Content-Length", "Content-Disposition"]
+  }
+]

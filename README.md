@@ -25,6 +25,14 @@ npm run test      # Jest tests
 npm run test:coverage  # Jest con coverage gates
 ```
 
+### Build y rutas del blog
+
+El sitio usa `output: "export"` (export estático). Las páginas `/blog/[id]` se pregeneran en tiempo de build: `getStaticPaths` llama a `GET /api/experiences` (usando `NEXT_PUBLIC_API_URL`) y genera un HTML por cada artículo con tag de blog. **Para que un artículo nuevo sea accesible por URL hay que volver a hacer build y desplegar.** Durante el build la API debe ser accesible (por ejemplo con `NEXT_PUBLIC_API_URL` apuntando a tu API en producción o a un backend local).
+
+### Imágenes (admin / editor)
+
+La subida de imágenes se hace **desde el frontend al backend** (POST con el archivo); el backend es el único que accede al bucket de GCP/Firebase Storage y devuelve la URL. No se exponen credenciales de GCP en el frontend. Configuración del bucket y reglas en el backend; ver [.cursor/plans/carga-imagenes-firebase-storage.plan.md](../.cursor/plans/carga-imagenes-firebase-storage.plan.md).
+
 ## Secciones disponibles
 
 ### Públicas

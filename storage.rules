@@ -1,0 +1,14 @@
+rules_version = '2';
+// Firebase Storage: imágenes del portfolio.
+// El acceso se realiza exclusivamente a través del backend (GCS SDK + IAM).
+// Las URLs que llegan al frontend son firmadas temporalmente (V4 signed URLs).
+// Se deniega todo acceso vía Firebase client SDK.
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /portfolio-images/{allPaths=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}
