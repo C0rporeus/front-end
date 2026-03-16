@@ -11,6 +11,7 @@ export const API_PRIVATE_ME = "/api/private/me";
 export const API_PRIVATE_REFRESH = "/api/private/refresh";
 export const API_PRIVATE_EXPERIENCES = "/api/private/experiences";
 export const API_PRIVATE_SKILLS = "/api/private/skills";
+export const API_PRIVATE_UPLOAD_IMAGE = "/api/private/upload-image";
 
 export const API_PRIVATE_OPS_METRICS = "/api/private/ops/metrics";
 export const API_PRIVATE_OPS_ALERTS = "/api/private/ops/alerts";

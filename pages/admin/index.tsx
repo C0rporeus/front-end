@@ -40,6 +40,7 @@ import { useAuth } from "@/context/auth-context";
 import { Experience, ExperiencePayload } from "@/interfaces/Experience";
 import { formatApiError } from "@/utils/format-api-error";
 import ErrorAlert from "@/components/UI/ErrorAlert";
+import { uploadImage } from "@/api/upload";
 
 type AdminView = "blog" | "experiences" | "skills" | "portfolio" | "ops";
 
@@ -59,21 +60,6 @@ function parseImageURLs(value: string): string[] {
     .split(/[\n,]/)
     .map((url) => url.trim())
     .filter(Boolean);
-}
-
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        resolve(reader.result);
-        return;
-      }
-      reject(new Error("No se pudo leer la imagen"));
-    };
-    reader.onerror = () => reject(new Error("No se pudo leer la imagen"));
-    reader.readAsDataURL(file);
-  });
 }
 
 function resolveAdminView(value: string | undefined): AdminView {
@@ -104,6 +90,7 @@ export default function AdminPage() {
   const [opsSummary, setOpsSummary] = useState<OpsSummary | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tagsInput, setTagsInput] = useState("");
+  const [uploadingImages, setUploadingImages] = useState(false);
   const [form, setForm] = useState<ExperiencePayload>({
     title: "",
     summary: "",
@@ -239,17 +226,28 @@ export default function AdminPage() {
 
   const onUploadImages = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (!files || files.length === 0) return;
+    if (!files || files.length === 0 || !token) return;
+    event.target.value = "";
+    setError("");
+    setUploadingImages(true);
     try {
-      const uploaded = await Promise.all(Array.from(files).map((file) => fileToDataUrl(file)));
+      const urls = await Promise.all(
+        Array.from(files).map((file) => uploadImage(token, file)),
+      );
       setForm((previous) => ({
         ...previous,
-        imageUrls: Array.from(new Set([...previous.imageUrls, ...uploaded])),
+        imageUrls: Array.from(
+          new Set([...previous.imageUrls, ...urls]),
+        ),
       }));
-    } catch {
-      setError("No fue posible procesar las imagenes seleccionadas.");
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "No fue posible subir las imágenes. Revisa la consola.",
+      );
     } finally {
-      event.target.value = "";
+      setUploadingImages(false);
     }
   };
 
@@ -340,6 +338,7 @@ export default function AdminPage() {
                       ? "Descripcion de la muestra y resultado"
                       : "Detalle tecnico y resultados"
                 }
+                onUploadImage={token ? (file) => uploadImage(token, file) : undefined}
               />
               <textarea
                 className="rounded border border-slate-600 bg-surface-900/85 p-2 text-text-primary"
@@ -353,13 +352,19 @@ export default function AdminPage() {
                   }))
                 }
               />
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                className="rounded border border-dashed border-slate-500 bg-surface-900/65 p-2 text-sm text-text-secondary file:mr-3 file:rounded file:border-0 file:bg-brand-600/35 file:px-3 file:py-1 file:text-text-primary hover:border-brand-400/65"
-                onChange={onUploadImages}
-              />
+              <div className="flex flex-col gap-1">
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  disabled={uploadingImages}
+                  className="rounded border border-dashed border-slate-500 bg-surface-900/65 p-2 text-sm text-text-secondary file:mr-3 file:rounded file:border-0 file:bg-brand-600/35 file:px-3 file:py-1 file:text-text-primary hover:border-brand-400/65 disabled:opacity-60"
+                  onChange={onUploadImages}
+                />
+                {uploadingImages && (
+                  <p className="text-sm text-text-muted">Subiendo imágenes…</p>
+                )}
+              </div>
               {form.imageUrls.length > 0 && (
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {form.imageUrls.slice(0, 6).map((imageUrl, index) => (
