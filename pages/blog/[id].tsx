@@ -1,10 +1,12 @@
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
+import { GetStaticPaths, GetStaticProps } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
 import { listPublicExperiences } from "@/api/experiences";
+import { API_EXPERIENCES } from "@/api/endpoints";
 import LandingHeader from "@/components/layout/landing/LandingHeader";
 import { Experience } from "@/interfaces/Experience";
 import ErrorAlert from "@/components/UI/ErrorAlert";
@@ -24,6 +26,56 @@ const hasBlogTag = (item: Experience) => {
   return normalizedTags.some((tag) => BLOG_TAGS.some((blogTag) => tag === blogTag || tag.includes(blogTag)));
 };
 
+const fetchPublicExperiencesAtBuild = async (): Promise<Experience[]> => {
+  const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3100";
+  const url = `${base.replace(/\/$/, "")}${API_EXPERIENCES}`;
+  const res = await fetch(url);
+  if (!res.ok) return [];
+  const data = (await res.json()) as { items?: Experience[] };
+  const items = Array.isArray(data?.items) ? data.items : [];
+  return items.map((item) => ({
+    ...item,
+    imageUrls: Array.isArray(item.imageUrls) ? item.imageUrls : [],
+  }));
+};
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const items = await fetchPublicExperiencesAtBuild();
+  const blogIds = items.filter(hasBlogTag).map((item) => item.id);
+  const paths = blogIds.map((id) => ({ params: { id } }));
+  return { paths, fallback: false };
+};
+
+function selectRelated(article: Experience, blogEntries: Experience[]): Experience[] {
+  const currentTags = new Set(article.tags.map(normalizeText));
+  const withScore = blogEntries
+    .filter((item) => item.id !== article.id)
+    .map((item) => {
+      const sharedTags = item.tags.map(normalizeText).filter((tag) => currentTags.has(tag)).length;
+      return { item, score: sharedTags * 2 };
+    });
+  const ranked = withScore
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score || b.item.createdAt.localeCompare(a.item.createdAt))
+    .map((entry) => entry.item)
+    .slice(0, 4);
+  if (ranked.length > 0) return ranked;
+  return blogEntries.filter((item) => item.id !== article.id).slice(0, 4);
+}
+
+export const getStaticProps: GetStaticProps<{
+  article: Experience | null;
+  related: Experience[];
+}> = async (context) => {
+  const id = typeof context.params?.id === "string" ? context.params.id : "";
+  if (!id) return { props: { article: null, related: [] } };
+  const items = await fetchPublicExperiencesAtBuild();
+  const blogEntries = items.filter(hasBlogTag).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const article = blogEntries.find((item) => item.id === id) ?? null;
+  const related = article ? selectRelated(article, blogEntries) : [];
+  return { props: { article, related } };
+};
+
 const formatDate = (value: string) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "Fecha no disponible";
@@ -38,58 +90,44 @@ const formatDate = (value: string) => {
 const resolvePreviewImage = (item: Experience) =>
   item.imageUrls.find((url) => typeof url === "string" && url.trim().length > 0) ?? "";
 
-export default function BlogDetailPage() {
+type BlogDetailPageProps = {
+  article: Experience | null;
+  related: Experience[];
+};
+
+export default function BlogDetailPage({ article: initialArticle, related: initialRelated }: BlogDetailPageProps) {
   const router = useRouter();
   const articleId = typeof router.query.id === "string" ? router.query.id : "";
 
   const [items, setItems] = useState<Experience[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialArticle);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (initialArticle && items.length === 0) return;
     listPublicExperiences()
       .then((data) => setItems(data))
       .catch(() =>
         setError("No fue posible cargar el articulo por ahora. Reintenta en unos minutos."),
       )
       .finally(() => setLoading(false));
-  }, []);
+  }, [initialArticle, items.length]);
 
   const blogEntries = useMemo(
     () => items.filter(hasBlogTag).sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
     [items],
   );
 
-  const article = useMemo(
-    () => blogEntries.find((item) => item.id === articleId),
-    [blogEntries, articleId],
-  );
+  const article = useMemo(() => {
+    if (initialArticle && initialArticle.id === articleId) return initialArticle;
+    return blogEntries.find((item) => item.id === articleId);
+  }, [initialArticle, articleId, blogEntries]);
 
   const related = useMemo(() => {
+    if (article && initialArticle && article.id === initialArticle.id) return initialRelated;
     if (!article) return [];
-
-    const currentTags = new Set(article.tags.map(normalizeText));
-    const withScore = blogEntries
-      .filter((item) => item.id !== article.id)
-      .map((item) => {
-        const sharedTags = item.tags
-          .map(normalizeText)
-          .filter((tag) => currentTags.has(tag)).length;
-        const score = sharedTags * 2;
-
-        return { item, score };
-      });
-
-    const ranked = withScore
-      .filter((entry) => entry.score > 0)
-      .sort((a, b) => b.score - a.score || b.item.createdAt.localeCompare(a.item.createdAt))
-      .map((entry) => entry.item)
-      .slice(0, 4);
-
-    if (ranked.length > 0) return ranked;
-
-    return blogEntries.filter((item) => item.id !== article.id).slice(0, 4);
-  }, [article, blogEntries]);
+    return selectRelated(article, blogEntries);
+  }, [article, initialArticle, initialRelated, blogEntries]);
 
   return (
     <>
