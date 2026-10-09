@@ -44,3 +44,29 @@ export function stripHtml(html: string): string {
   }
   return html.replace(/<[^>]*>/g, "").trim();
 }
+
+/** Extrae el src de la primera imagen embebida en HTML (cubre src='...' y src="...") */
+export function extractFirstImageFromHtml(html: string): string {
+  if (!html) return "";
+  const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+  return match?.[1] ?? "";
+}
+
+/** Cuenta todas las etiquetas <img> en un bloque de HTML */
+export function countImagesInHtml(html: string): number {
+  if (!html) return 0;
+  const matches = html.match(/<img[^>]+>/gi);
+  return matches?.length ?? 0;
+}
+
+/**
+ * Elimina la primera <img> del HTML y limpia el contenedor padre si queda vacío.
+ * Usado para evitar duplicar la imagen de hero que ya se muestra en el encabezado del artículo.
+ */
+export function removeFirstImageFromHtml(html: string): string {
+  if (!html) return html;
+  const withoutImg = html.replace(/<img[^>]*\/?>/i, "");
+  return withoutImg
+    .replace(/<p>(\s|&nbsp;)*<\/p>/gi, "")
+    .replace(/<figure>(\s|&nbsp;)*<\/figure>/gi, "");
+}

@@ -9,14 +9,14 @@ type LandingHeaderProps = {
 };
 
 const publicLinks = [
-  { href: "/about", label: "Sobre mi" },
+  { href: "/about", label: "Sobre mí" },
   { href: "/blog", label: "Blog" },
   { href: "/portfolio", label: "Portafolio" },
   { href: "/tools", label: "Herramientas" },
 ];
 
 const privateLinks = [
-  { href: "/admin?view=blog", label: "Articulos" },
+  { href: "/admin?view=blog", label: "Artículos" },
   { href: "/admin?view=experiences", label: "Experiencias" },
   { href: "/admin?view=skills", label: "Capacidades" },
   { href: "/admin?view=portfolio", label: "Muestras" },
@@ -32,16 +32,11 @@ const LandingHeader = ({ mode = "public", onPrivateLogout }: LandingHeaderProps)
   useEffect(() => {
     const handleScroll = () => {
       const offset = window.scrollY;
-      setIsScrolled(offset > 50); // Cambia el estado cuando el scroll pasa de 50px
+      setIsScrolled(offset > 50);
     };
 
-    // Escuchamos al evento scroll
     window.addEventListener("scroll", handleScroll);
-
-    return () => {
-      // Limpiamos el listener al desmontar el componente
-      window.removeEventListener("scroll", handleScroll);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
@@ -53,10 +48,8 @@ const LandingHeader = ({ mode = "public", onPrivateLogout }: LandingHeaderProps)
       } fixed left-0 top-0 z-50 w-full border-b border-slate-700/60 transition-all duration-300`}
     >
       <nav
-        className={`${
-          isScrolled ? "text-text-primary" : "text-text-primary"
-        } mx-auto flex min-h-[72px] w-full max-w-7xl items-center justify-between px-4 py-3 md:px-8`}
-        aria-label="Navegacion principal"
+        className="mx-auto flex min-h-[72px] w-full max-w-7xl items-center justify-between px-4 py-3 text-text-primary md:px-8"
+        aria-label="Navegación principal"
       >
         <div
           className="glitch-logo text-2xl font-bold tracking-tight md:text-3xl"
@@ -70,9 +63,10 @@ const LandingHeader = ({ mode = "public", onPrivateLogout }: LandingHeaderProps)
           className="rounded-md border border-slate-500/60 px-3 py-2 text-sm md:hidden"
           aria-expanded={isMenuOpen}
           aria-controls="main-menu"
+          aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
           onClick={() => setIsMenuOpen((prev) => !prev)}
         >
-          Menu
+          Menú
         </button>
 
         <div className="hidden items-center gap-1 md:flex">
@@ -91,7 +85,7 @@ const LandingHeader = ({ mode = "public", onPrivateLogout }: LandingHeaderProps)
               className="ml-2 rounded-md border border-rose-400/45 bg-rose-500/20 px-3 py-2 text-sm font-medium text-rose-100 hover:bg-rose-500/35"
               onClick={onPrivateLogout}
             >
-              Cerrar sesion
+              Cerrar sesión
             </button>
           )}
         </div>
@@ -104,6 +98,7 @@ const LandingHeader = ({ mode = "public", onPrivateLogout }: LandingHeaderProps)
               key={`mobile-${link.href}`}
               href={link.href}
               className="rounded-md px-2 py-2 text-text-secondary hover:bg-surface-800/50 hover:text-text-primary"
+              onClick={() => setIsMenuOpen(false)}
             >
               {link.label}
             </Link>
@@ -114,7 +109,7 @@ const LandingHeader = ({ mode = "public", onPrivateLogout }: LandingHeaderProps)
               className="mt-1 rounded-md border border-rose-400/45 bg-rose-500/20 px-2 py-2 text-left font-medium text-rose-100 hover:bg-rose-500/35"
               onClick={onPrivateLogout}
             >
-              Cerrar sesion
+              Cerrar sesión
             </button>
           )}
         </div>
