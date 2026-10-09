@@ -1,4 +1,4 @@
-// vista de registro de usuarios usando el conector en la caprta api/auth.tsx el metodo registerUser
+// Vista de registro de usuarios conectada con el método registerUser de api/auth.
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/router";
@@ -23,11 +23,11 @@ const Register = () => {
     setError("");
 
     if (!isValidEmail(email.trim())) {
-      setError("Formato de email invalido");
+      setError("El formato del correo electrónico no es válido.");
       return;
     }
     if (!isValidPassword(password)) {
-      setError("La contrasena debe tener al menos 8 caracteres, una mayuscula, una minuscula y un numero");
+      setError("La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número.");
       return;
     }
 
@@ -36,7 +36,7 @@ const Register = () => {
         email,
         password,
       });
-      setTokenValue(result.token);
+      setTokenValue(result.authenticated ? "cookie-session" : null);
       router.push("/admin");
     } catch (submitError: unknown) {
       setError(formatApiError(submitError, "No fue posible registrar el usuario"));
@@ -55,7 +55,7 @@ const Register = () => {
           <p className="mt-2 text-center text-sm text-text-secondary">
             ¿Ya tienes acceso?{" "}
             <Link href="/auth/login" className="font-medium text-brand-400 hover:text-brand-500">
-              Inicia sesion aqui
+              Inicia sesión aquí
             </Link>
             .
           </p>
@@ -63,7 +63,7 @@ const Register = () => {
           <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email-address" className="mb-1 block text-sm text-text-secondary">
-                Correo electronico
+                Correo electrónico
               </label>
               <input
                 id="email-address"
@@ -80,7 +80,7 @@ const Register = () => {
             </div>
             <div>
               <label htmlFor="password" className="mb-1 block text-sm text-text-secondary">
-                Contrasena
+                Contraseña
               </label>
               <input
                 id="password"
@@ -93,7 +93,7 @@ const Register = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="block w-full rounded-md border border-slate-600 bg-surface-900/85 px-3 py-2 text-text-primary placeholder:text-text-muted"
-                placeholder="Min 8 chars, mayuscula, minuscula, numero"
+                placeholder="Mín. 8 caracteres: mayúscula, minúscula y número"
               />
             </div>
             {error && (

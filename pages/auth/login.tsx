@@ -1,4 +1,4 @@
-// pagina de login limpia sin cabecera o footer debe usar los componentes de tailwind js y micro acciones
+// Página de inicio de sesión sin cabecera ni pie de página.
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/router";
@@ -25,10 +25,10 @@ const Login = () => {
         email,
         password,
       });
-      setTokenValue(result.token);
+      setTokenValue(result.authenticated ? "cookie-session" : null);
       router.push("/admin");
     } catch (submitError: unknown) {
-      setError(formatApiError(submitError, "No fue posible iniciar sesion"));
+      setError(formatApiError(submitError, "No fue posible iniciar sesión"));
     }
   }
 
@@ -41,7 +41,7 @@ const Login = () => {
       <main className="flex min-h-screen items-center justify-center px-4 py-10 sm:px-6">
         <section className="w-full max-w-xl rounded-3xl border border-slate-700/85 bg-surface-800/72 p-6 shadow-card backdrop-blur-sm md:p-8">
           <h1 className="text-center text-4xl font-extrabold tracking-tight text-text-primary md:text-5xl">
-            Iniciar sesion
+            Iniciar sesión
           </h1>
           <p className="mx-auto mt-3 max-w-md text-center text-base leading-7 text-text-secondary">
             Accede a tu panel privado o{" "}
@@ -54,7 +54,7 @@ const Login = () => {
           <form className="mx-auto mt-8 max-w-lg space-y-5" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email-address" className="mb-2 block text-base font-medium text-text-secondary">
-                Correo electronico
+                Correo electrónico
               </label>
               <input
                 id="email-address"
@@ -71,7 +71,7 @@ const Login = () => {
             </div>
             <div>
               <label htmlFor="password" className="mb-2 block text-base font-medium text-text-secondary">
-                Contrasena
+                Contraseña
               </label>
               <input
                 id="password"
@@ -83,7 +83,7 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="block min-h-12 w-full rounded-lg border border-slate-600/90 bg-surface-900/90 px-4 py-3 text-lg text-text-primary placeholder:text-text-muted focus:border-brand-400/80"
-                placeholder="Tu contrasena"
+                placeholder="Tu contraseña"
               />
             </div>
 

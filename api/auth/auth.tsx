@@ -6,23 +6,30 @@ type AuthPayload = {
   password: string;
 };
 
-type AuthSuccess = {
-  token: string;
+type AuthServerResponse = {
+  authenticated?: boolean;
+  // Transitional compatibility with the currently deployed API. Never return
+  // this legacy field to callers; the cookie is the only retained credential.
+  token?: string;
   id?: number | string;
   name?: string;
   email?: string;
 };
 
+type AuthSuccess = Omit<AuthServerResponse, "token" | "authenticated"> & {
+  authenticated: true;
+};
+
 async function requestAuth(path: string, payload: AuthPayload): Promise<AuthSuccess> {
-  const data = await apiRequest<AuthSuccess>(path, {
+  const data = await apiRequest<AuthServerResponse>(path, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  if (!data.token) {
+  if (data.authenticated !== true && !data.token) {
     throw new Error("No fue posible completar la autenticacion");
   }
-  return data;
+  return { authenticated: true, id: data.id, name: data.name, email: data.email };
 }
 
 async function loginUser(credentials: AuthPayload): Promise<AuthSuccess> {
@@ -33,14 +40,14 @@ async function registerUser(user: AuthPayload): Promise<AuthSuccess> {
   return requestAuth(API_REGISTER, user);
 }
 
-async function refreshToken(token: string): Promise<AuthSuccess> {
-  const data = await apiAuthRequest<AuthSuccess>(API_PRIVATE_REFRESH, {
+async function refreshToken(): Promise<AuthSuccess> {
+  const data = await apiAuthRequest<AuthServerResponse>(API_PRIVATE_REFRESH, {
     method: "POST",
   });
-  if (!data.token) {
+  if (data.authenticated !== true && !data.token) {
     throw new Error("No fue posible renovar la sesion");
   }
-  return data;
+  return { authenticated: true, id: data.id, name: data.name, email: data.email };
 }
 
 async function logoutUser(): Promise<{ message: string }> {

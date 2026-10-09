@@ -1,5 +1,5 @@
 import { apiAuthRequest } from "@/api/http-client";
-import { API_PRIVATE_OPS_METRICS, API_PRIVATE_OPS_ALERTS, API_PRIVATE_OPS_HEALTH, API_PRIVATE_OPS_HISTORY, API_PRIVATE_OPS_SUMMARY } from "@/api/endpoints";
+import { API_PRIVATE_OPS_ALERTS, API_PRIVATE_OPS_HEALTH, API_PRIVATE_OPS_HISTORY, API_PRIVATE_OPS_METRICS, API_PRIVATE_OPS_SUMMARY } from "@/api/endpoints";
 
 export type OpsMetrics = {
   startedAtUnix: number;
@@ -92,3 +92,4 @@ export function getOpsHistory(token: string) {
 export function getOpsSummary(token: string) {
   return apiAuthRequest<OpsSummary>(API_PRIVATE_OPS_SUMMARY, { method: "GET" });
 }
+

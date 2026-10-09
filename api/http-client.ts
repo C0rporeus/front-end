@@ -54,6 +54,7 @@ export async function apiRequest<T>(path: string, options?: RequestInit): Promis
 }
 
 export function authHeaders(): Record<string, string> {
+  // Las credenciales viajan exclusivamente en la cookie HttpOnly.
   return {};
 }
 

@@ -8,15 +8,27 @@ describe("auth api client", () => {
     jest.restoreAllMocks();
   });
 
-  it("returns token on successful login", async () => {
+  it("confirms successful login without exposing the JWT", async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
-      text: async () => JSON.stringify({ token: "token-123" }),
+      text: async () => JSON.stringify({ authenticated: true }),
       headers: new Headers(),
     }) as unknown as typeof fetch;
 
     const result = await loginUser({ email: "mail@test.com", password: "1234" });
-    expect(result.token).toBe("token-123");
+    expect(result.authenticated).toBe(true);
+  });
+
+  it("accepts the currently deployed legacy response but discards its token", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      text: async () => JSON.stringify({ token: "legacy-jwt" }),
+      headers: new Headers(),
+    }) as unknown as typeof fetch;
+
+    const result = await loginUser({ email: "mail@test.com", password: "1234" });
+    expect(result).toEqual({ authenticated: true, id: undefined, name: undefined, email: undefined });
+    expect("token" in result).toBe(false);
   });
 
   it("throws with API message on failed register", async () => {
@@ -31,15 +43,15 @@ describe("auth api client", () => {
     );
   });
 
-  it("returns a new token on successful refresh", async () => {
+  it("confirms refresh without exposing the JWT", async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
-      text: async () => JSON.stringify({ token: "refreshed-token" }),
+      text: async () => JSON.stringify({ authenticated: true }),
       headers: new Headers(),
     }) as unknown as typeof fetch;
 
-    const result = await refreshToken("old-token");
-    expect(result.token).toBe("refreshed-token");
+    const result = await refreshToken();
+    expect(result.authenticated).toBe(true);
     expect(global.fetch).toHaveBeenCalledWith(
       expect.stringContaining("/api/private/refresh"),
       expect.objectContaining({
@@ -52,11 +64,11 @@ describe("auth api client", () => {
   it("throws when refresh responds without token", async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
-      text: async () => JSON.stringify({ message: "no token" }),
+      text: async () => JSON.stringify({ message: "no session" }),
       headers: new Headers(),
     }) as unknown as typeof fetch;
 
-    await expect(refreshToken("old-token")).rejects.toThrow(
+    await expect(refreshToken()).rejects.toThrow(
       "No fue posible renovar la sesion"
     );
   });
@@ -69,7 +81,7 @@ describe("auth api client", () => {
       headers: new Headers(),
     }) as unknown as typeof fetch;
 
-    await expect(refreshToken("expired-token")).rejects.toThrow("Token expirado");
+    await expect(refreshToken()).rejects.toThrow("Token expirado");
   });
 
   it("throws when API responds without token", async () => {
