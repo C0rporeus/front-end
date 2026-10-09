@@ -1,4 +1,5 @@
 import "../styles/globals.css";
+import "highlight.js/styles/github-dark.css";
 import { AuthProvider } from "@/context/auth-context";
 import type { AppProps } from "next/app";
 

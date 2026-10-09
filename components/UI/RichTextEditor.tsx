@@ -3,8 +3,44 @@ import StarterKit from "@tiptap/starter-kit";
 import ImageExtension from "@tiptap/extension-image";
 import TextAlign from "@tiptap/extension-text-align";
 import Placeholder from "@tiptap/extension-placeholder";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import { createLowlight } from "lowlight";
+import typescript from "highlight.js/lib/languages/typescript";
+import javascript from "highlight.js/lib/languages/javascript";
+import go from "highlight.js/lib/languages/go";
+import python from "highlight.js/lib/languages/python";
+import bash from "highlight.js/lib/languages/bash";
+import json from "highlight.js/lib/languages/json";
+import sql from "highlight.js/lib/languages/sql";
+import xml from "highlight.js/lib/languages/xml";
+import css from "highlight.js/lib/languages/css";
+import yaml from "highlight.js/lib/languages/yaml";
+import markdown from "highlight.js/lib/languages/markdown";
+import rust from "highlight.js/lib/languages/rust";
+import csharp from "highlight.js/lib/languages/csharp";
+import java from "highlight.js/lib/languages/java";
+import powershell from "highlight.js/lib/languages/powershell";
 import { createPortal } from "react-dom";
 import { useCallback, useEffect, useRef, useState } from "react";
+
+const lowlight = createLowlight();
+lowlight.register("typescript", typescript);
+lowlight.register("javascript", javascript);
+lowlight.register("go", go);
+lowlight.register("python", python);
+lowlight.register("bash", bash);
+lowlight.register("shell", bash);
+lowlight.register("json", json);
+lowlight.register("sql", sql);
+lowlight.register("xml", xml);
+lowlight.register("html", xml);
+lowlight.register("css", css);
+lowlight.register("yaml", yaml);
+lowlight.register("markdown", markdown);
+lowlight.register("rust", rust);
+lowlight.register("csharp", csharp);
+lowlight.register("java", java);
+lowlight.register("powershell", powershell);
 
 type RichTextEditorProps = {
   value: string;
@@ -243,7 +279,7 @@ const Toolbar = ({
   };
 
   return (
-    <div className="flex flex-wrap gap-1 border-b border-slate-600 bg-surface-900/95 px-2 py-1.5">
+    <div className="sticky top-[72px] z-40 flex flex-wrap gap-1 rounded-t border-b border-slate-600 bg-surface-900/95 px-2 py-1.5 backdrop-blur-sm">
       <ToolbarButton
         label="B"
         active={editor.isActive("bold")}
@@ -316,6 +352,19 @@ const Toolbar = ({
 
       <span className="mx-1 border-l border-slate-600/60" />
 
+      <ToolbarButton
+        label="</>"
+        active={editor.isActive("code")}
+        onClick={() => editor.chain().focus().toggleCode().run()}
+      />
+      <ToolbarButton
+        label="{ }"
+        active={editor.isActive("codeBlock")}
+        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+      />
+
+      <span className="mx-1 border-l border-slate-600/60" />
+
       <button
         ref={imageButtonRef}
         type="button"
@@ -365,7 +414,9 @@ const RichTextEditor = ({
     extensions: [
       StarterKit.configure({
         heading: { levels: [2, 3, 4] },
+        codeBlock: false,
       }),
+      CodeBlockLowlight.configure({ lowlight, defaultLanguage: "typescript" }),
       ImageExtension.configure({ inline: false, allowBase64: false }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       Placeholder.configure({
@@ -393,7 +444,7 @@ const RichTextEditor = ({
   if (!editor) return null;
 
   return (
-    <div className="overflow-hidden rounded border border-slate-600 bg-surface-900/85">
+    <div className="rounded border border-slate-600 bg-surface-900/85">
       <Toolbar editor={editor} onUploadImage={onUploadImage} />
       <EditorContent editor={editor} />
     </div>

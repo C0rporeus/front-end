@@ -28,6 +28,8 @@ jest.mock("@tiptap/starter-kit", () => ({ __esModule: true, default: { configure
 jest.mock("@tiptap/extension-image", () => ({ __esModule: true, default: { configure: jest.fn(() => "image-ext") } }));
 jest.mock("@tiptap/extension-text-align", () => ({ __esModule: true, default: { configure: jest.fn(() => "text-align") } }));
 jest.mock("@tiptap/extension-placeholder", () => ({ __esModule: true, default: { configure: jest.fn(() => "placeholder") } }));
+jest.mock("@tiptap/extension-code-block-lowlight", () => ({ __esModule: true, default: { configure: jest.fn(() => "code-block") } }));
+jest.mock("lowlight", () => ({ createLowlight: () => ({ register: jest.fn() }) }));
 
 import RichTextEditor from "./RichTextEditor";
 
