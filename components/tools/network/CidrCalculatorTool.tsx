@@ -99,7 +99,7 @@ const CidrCalculatorTool = () => {
     setSubnets([]);
     const parsed = parseCidr(cidrInput);
     if (!parsed) {
-      setError("Formato CIDR invalido. Usa el formato: 192.168.1.0/24");
+      setError("El formato CIDR no es válido. Usa el formato 192.168.1.0/24.");
       setResult(null);
       return;
     }
@@ -110,7 +110,7 @@ const CidrCalculatorTool = () => {
     if (!result) return;
     const splits = splitSubnets(cidrInput, splitPrefix);
     if (!splits) {
-      setError("El prefijo de division debe ser mayor al prefijo actual y menor o igual a 32.");
+      setError("El prefijo de división debe ser mayor que el actual y menor o igual que 32.");
       return;
     }
     setError("");
@@ -127,7 +127,7 @@ const CidrCalculatorTool = () => {
       <div className="public-card mb-6">
         <div className="mb-4 flex flex-wrap items-end gap-3">
           <div>
-            <label className="mb-1 block text-sm text-text-secondary">Notacion CIDR</label>
+            <label className="mb-1 block text-sm text-text-secondary">Notación CIDR</label>
             <ToolInput
               value={cidrInput}
               onChange={(e) => setCidrInput(e.target.value)}
@@ -144,12 +144,12 @@ const CidrCalculatorTool = () => {
             <table className="w-full text-sm">
               <tbody className="divide-y divide-slate-700/50">
                 {([
-                  ["Direccion de Red", result.network],
+                  ["Dirección de red", result.network],
                   ["Broadcast", result.broadcast],
                   ["Primer Host", result.firstHost],
-                  ["Ultimo Host", result.lastHost],
+                  ["Último host", result.lastHost],
                   ["Total Hosts", result.totalHosts.toLocaleString()],
-                  ["Mascara de Subred", result.subnetMask],
+                  ["Máscara de subred", result.subnetMask],
                   ["Wildcard", result.wildcard],
                   ["Prefijo", `/${result.prefix}`],
                 ] as [string, string | number][]).map(([label, value]) => (

@@ -15,7 +15,7 @@ export type ToolCategory = {
 export const TOOL_CATEGORIES: ToolCategory[] = [
   {
     id: "encoding-crypto",
-    label: "Codificacion y Criptografia",
+    label: "Codificación y criptografía",
     icon: "🔐",
     tools: [
       {
@@ -27,7 +27,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
       {
         slug: "uuid",
         label: "UUID v4",
-        description: "Generar identificadores unicos universales",
+        description: "Generar identificadores únicos universales",
         status: "stable",
       },
       {
@@ -39,7 +39,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
       {
         slug: "rsa-keys",
         label: "Generador RSA",
-        description: "Generar pares de claves RSA publica/privada",
+        description: "Generar pares de claves RSA pública/privada",
         status: "beta",
       },
       {
@@ -58,12 +58,12 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
       {
         slug: "domain-validator",
         label: "Validador de Dominio",
-        description: "Verificar resolucion DNS de un dominio",
+        description: "Verificar la resolución DNS de un dominio",
         status: "beta",
       },
       {
         slug: "dns-propagation",
-        label: "Propagacion DNS",
+        label: "Propagación DNS",
         description: "Consultar registros DNS desde el servidor",
         status: "beta",
       },
@@ -76,7 +76,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
       {
         slug: "blacklist",
         label: "Blacklist Checker",
-        description: "Verificar si un dominio/IP esta en listas negras DNSBL",
+        description: "Verificar si un dominio o IP está en listas negras DNSBL",
         status: "beta",
       },
       {

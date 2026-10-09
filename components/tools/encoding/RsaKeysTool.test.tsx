@@ -49,7 +49,7 @@ describe("RsaKeysTool", () => {
     fireEvent.click(screen.getByRole("button", { name: /Generar Par RSA/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Clave Publica/i)).toBeInTheDocument();
+      expect(screen.getByText(/Clave pública/i)).toBeInTheDocument();
       expect(screen.getByText(/Clave Privada/i)).toBeInTheDocument();
       expect(screen.getByText(/BEGIN PUBLIC KEY/)).toBeInTheDocument();
       expect(screen.getByText(/BEGIN PRIVATE KEY/)).toBeInTheDocument();
@@ -72,7 +72,7 @@ describe("RsaKeysTool", () => {
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toBeInTheDocument();
-      expect(screen.getByText(/Error generando las claves RSA/i)).toBeInTheDocument();
+      expect(screen.getByText(/Error al generar las claves RSA/i)).toBeInTheDocument();
     });
   });
 });

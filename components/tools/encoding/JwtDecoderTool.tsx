@@ -85,7 +85,7 @@ const JwtDecoderTool = () => {
       const result = parseJwt(token);
       setDecoded(result);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Token JWT invalido");
+      setError(err instanceof Error ? err.message : "El token JWT no es válido.");
       setDecoded(null);
     }
   }, [token]);
@@ -98,7 +98,7 @@ const JwtDecoderTool = () => {
           setDecoded(parseJwt(text));
           setError("");
         } catch {
-          setError("El contenido pegado no es un JWT valido");
+          setError("El contenido pegado no es un JWT válido.");
           setDecoded(null);
         }
       }

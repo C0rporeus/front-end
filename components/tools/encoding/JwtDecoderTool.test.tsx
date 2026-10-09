@@ -107,7 +107,7 @@ describe("JwtDecoderTool", () => {
     render(<JwtDecoderTool />);
     fireEvent.click(screen.getByRole("button", { name: /Pegar desde portapapeles/i }));
 
-    await screen.findByText(/no es un JWT valido/i);
+    await screen.findByText(/no es un JWT válido/i);
   });
 
   test("paste failure shows clipboard access error", async () => {

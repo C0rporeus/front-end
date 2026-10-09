@@ -30,12 +30,12 @@ const LandingFooter: React.FC<FooterProps> = ({ ContactForm }) => {
     <footer className="landing-footer">
       <div className="footer-contact-form">
         <p className="mb-3 text-sm text-text-secondary">
-          ¿Tienes un reto tecnico? Conversemos sobre una solucion aterrizada a tu contexto.
+          ¿Tienes un reto técnico? Conversemos sobre una solución aterrizada a tu contexto.
         </p>
 
         {status === "sent" ? (
           <p className="rounded-xl border border-emerald-500/60 bg-emerald-500/15 p-3 text-emerald-200">
-            Mensaje enviado. Te respondere pronto.
+            Mensaje enviado. Te responderé pronto.
           </p>
         ) : (
           <>
@@ -52,12 +52,12 @@ const LandingFooter: React.FC<FooterProps> = ({ ContactForm }) => {
         )}
       </div>
       <div className="footer-links" aria-label="Enlaces del sitio">
-        <Link href="/about">Acerca de mi</Link>
+        <Link href="/about">Acerca de mí</Link>
         <Link href="/tools">Herramientas</Link>
         <Link href="/portfolio">Portafolio</Link>
       </div>
       <div className="footer-copy-right">
-        © {new Date().getFullYear()} Yonathan Gutierrez R. Consultoria y desarrollo de productos digitales.
+        © {new Date().getFullYear()} Yonathan Gutierrez R. Consultoría y desarrollo de productos digitales.
       </div>
     </footer>
   );

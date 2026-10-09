@@ -17,17 +17,17 @@ describe("CidrCalculatorTool", () => {
     const rows = screen.getAllByRole("row");
     const rowText = (idx: number) => rows[idx]?.textContent ?? "";
 
-    expect(rowText(0)).toContain("Direccion de Red");
+    expect(rowText(0)).toContain("Dirección de red");
     expect(rowText(0)).toContain("192.168.1.0");
     expect(rowText(1)).toContain("Broadcast");
     expect(rowText(1)).toContain("192.168.1.255");
     expect(rowText(2)).toContain("Primer Host");
     expect(rowText(2)).toContain("192.168.1.1");
-    expect(rowText(3)).toContain("Ultimo Host");
+    expect(rowText(3)).toContain("Último host");
     expect(rowText(3)).toContain("192.168.1.254");
     expect(rowText(4)).toContain("Total Hosts");
     expect(rowText(4)).toContain("254");
-    expect(rowText(5)).toContain("Mascara de Subred");
+    expect(rowText(5)).toContain("Máscara de subred");
     expect(rowText(5)).toContain("255.255.255.0");
     expect(rowText(7)).toContain("Prefijo");
     expect(rowText(7)).toContain("/24");
@@ -51,7 +51,7 @@ describe("CidrCalculatorTool", () => {
     fireEvent.click(screen.getByRole("button", { name: /Calcular/i }));
 
     expect(screen.getByRole("alert")).toBeInTheDocument();
-    expect(screen.getByText(/Formato CIDR invalido/i)).toBeInTheDocument();
+    expect(screen.getByText(/El formato CIDR no es válido/i)).toBeInTheDocument();
   });
 
   test("/32 edge case: single host", () => {
@@ -84,7 +84,7 @@ describe("CidrCalculatorTool", () => {
     fireEvent.click(screen.getByRole("button", { name: /Calcular/i }));
 
     const rows = screen.getAllByRole("row");
-    const networkRow = rows.find((r) => r.textContent?.includes("Direccion de Red"));
+    const networkRow = rows.find((r) => r.textContent?.includes("Dirección de red"));
     expect(networkRow?.textContent).toContain("10.0.0.0");
     const broadcastRow = rows.find((r) => r.textContent?.includes("Broadcast"));
     expect(broadcastRow?.textContent).toContain("10.255.255.255");

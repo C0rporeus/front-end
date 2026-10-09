@@ -6,8 +6,8 @@ const Custom404 = () => {
   return (
     <div className="flex min-h-screen flex-col text-text-primary">
       <Head>
-        <title>404 - Pagina no encontrada | Yonathan Gutierrez R</title>
-        <meta name="description" content="La pagina que buscas no existe o ha sido movida." />
+        <title>404 - Página no encontrada | Yonathan Gutierrez R</title>
+        <meta name="description" content="La página que buscas no existe o ha sido movida." />
         <meta name="robots" content="noindex, follow" />
       </Head>
 
@@ -24,7 +24,7 @@ const Custom404 = () => {
           </h2>
           
           <p className="mb-10 text-base text-text-secondary md:text-lg">
-            La pagina que intentas visitar no existe o ha sido movida a otra dimension. 
+            La página que intentas visitar no existe o ha sido movida a otra dimensión.
             No te preocupes, puedes volver al inicio y seguir explorando.
           </p>
 

@@ -7,7 +7,7 @@ export default function DomainValidatorPage() {
     <>
       <Head>
         <title>Validador de Dominio | Tools | Portfolio Dev</title>
-        <meta name="description" content="Verificar resolucion DNS de un dominio" />
+        <meta name="description" content="Verificar la resolución DNS de un dominio." />
       </Head>
       <ToolsLayout>
         <DomainValidatorTool />

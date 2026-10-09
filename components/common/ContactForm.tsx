@@ -47,7 +47,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ onSubmit }) => {
         {errors.name && <div id="name-error" className="error">{errors.name}</div>}
       </div>
       <div className="form-group">
-        <label htmlFor="email">Correo electronico</label>
+        <label htmlFor="email">Correo electrónico</label>
         <input
           id="email"
           type="email"

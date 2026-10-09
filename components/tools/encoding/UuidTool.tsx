@@ -22,7 +22,7 @@ const UuidTool = () => {
   return (
     <section>
       <h1 className="public-title mb-2">Generador UUID v4</h1>
-      <p className="public-lead mb-6">Generar identificadores unicos universales.</p>
+      <p className="public-lead mb-6">Generar identificadores únicos universales.</p>
 
       {error && <ErrorAlert message={error} />}
 

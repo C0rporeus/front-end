@@ -7,7 +7,7 @@ export default function RsaKeysPage() {
     <>
       <Head>
         <title>Generador RSA | Tools | Portfolio Dev</title>
-        <meta name="description" content="Generar pares de claves RSA publica/privada con Web Crypto API" />
+        <meta name="description" content="Generar pares de claves RSA pública/privada con Web Crypto API." />
       </Head>
       <ToolsLayout>
         <RsaKeysTool />

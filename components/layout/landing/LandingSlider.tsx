@@ -5,23 +5,23 @@ const LandingSlider = () => {
     {
       id: 1,
       title:
-        "Consultoria estrategica en tecnologia, software e infraestructura",
+        "Consultoría estratégica en tecnología, software e infraestructura",
       subtitle:
-        "Diseno e implementacion de soluciones que conectan negocio, plataformas y seguridad de forma sostenible.",
+        "Diseño e implementación de soluciones que conectan negocio, plataformas y seguridad de forma sostenible.",
       image: "https://source.unsplash.com/random/1920x1680?technology",
     },
     {
       id: 2,
-      title: "Productos web y moviles orientados a resultados",
+      title: "Productos web y móviles orientados a resultados",
       subtitle:
         "Desde discovery hasta entrega continua, construyendo experiencias claras para usuarios y equipos.",
       image: "https://source.unsplash.com/random/1920x1680?coding",
     },
     {
       id: 3,
-      title: "Infraestructura moderna y seguridad por diseno",
+      title: "Infraestructura moderna y seguridad por diseño",
       subtitle:
-        "Automatizacion, cloud, contenedores y buenas practicas de observabilidad para operar con confianza.",
+        "Automatización, cloud, contenedores y buenas prácticas de observabilidad para operar con confianza.",
       image: "https://source.unsplash.com/random/1920x1680?Hardware",
     },
   ];
@@ -57,7 +57,7 @@ const LandingSlider = () => {
           <div className="relative mx-auto flex min-h-[68svh] w-full max-w-7xl items-center px-4 pb-14 pt-24 sm:px-5 md:min-h-[74svh] md:px-8 md:pt-28">
             <div className="max-w-3xl">
               <p className="mb-5 text-xs font-semibold uppercase tracking-[0.24em] text-brand-400 md:text-sm">
-                Tecnologia aplicada
+                Tecnología aplicada
               </p>
               <h1 className="slide-title">{slide.title}</h1>
               <p className="slide-subtitle">{slide.subtitle}</p>

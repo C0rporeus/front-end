@@ -5,7 +5,7 @@ import { ToolTextarea } from "@/components/UI/ToolInput";
 import { sanitizeSvg } from "@/utils/html-content";
 
 const DEFAULT_DIAGRAM = `graph TD
-    A[Inicio] --> B{Es valido?}
+    A[Inicio] --> B{¿Es válido?}
     B -->|Si| C[Procesar]
     B -->|No| D[Rechazar]
     C --> E[Fin]
@@ -54,7 +54,7 @@ const MermaidTool = () => {
       );
       setSvg(sanitizeSvg(rendered));
     } catch {
-      setError("Error de sintaxis en el diagrama. Revisa la notacion Mermaid.");
+      setError("Error de sintaxis en el diagrama. Revisa la notación Mermaid.");
       setSvg("");
     }
   }, [code]);

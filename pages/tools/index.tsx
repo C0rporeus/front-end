@@ -7,13 +7,13 @@ export default function ToolsPage() {
     <>
       <Head>
         <title>Tools | Portfolio Dev</title>
-        <meta name="description" content="Herramientas para equipos de desarrollo: codificacion, criptografia, red, DNS y diagramas" />
+        <meta name="description" content="Herramientas para equipos de desarrollo: codificación, criptografía, redes, DNS y diagramas." />
       </Head>
       <ToolsLayout>
         <section className="mb-8">
           <h1 className="public-title">Herramientas para equipos de desarrollo</h1>
           <p className="public-lead">
-            Utilidades practicas para acelerar tareas comunes de desarrollo, redes y operaciones.
+            Utilidades prácticas para acelerar tareas comunes de desarrollo, redes y operaciones.
           </p>
         </section>
         <ToolsOverviewGrid />

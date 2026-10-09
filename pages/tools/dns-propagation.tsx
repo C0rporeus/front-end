@@ -6,7 +6,7 @@ export default function DnsPropagationPage() {
   return (
     <>
       <Head>
-        <title>Propagacion DNS | Tools | Portfolio Dev</title>
+        <title>Propagación DNS | Tools | Portfolio Dev</title>
         <meta name="description" content="Consultar registros DNS desde el servidor" />
       </Head>
       <ToolsLayout>

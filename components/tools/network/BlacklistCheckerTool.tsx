@@ -52,14 +52,14 @@ const BlacklistCheckerTool = () => {
   return (
     <section>
       <h1 className="public-title mb-2">Blacklist Checker</h1>
-      <p className="public-lead mb-6">Verificar si una IP o dominio esta en listas negras DNSBL.</p>
+      <p className="public-lead mb-6">Verificar si una IP o dominio está en listas negras DNSBL.</p>
 
       {error && <ErrorAlert message={error} />}
 
       <div className="public-card">
         <div className="mb-4 flex flex-wrap items-end gap-3">
           <div className="flex-1">
-            <label className="mb-1 block text-sm text-text-secondary">Direccion IPv4 o dominio</label>
+            <label className="mb-1 block text-sm text-text-secondary">Dirección IPv4 o dominio</label>
             <ToolInput
               className="w-full"
               value={input}

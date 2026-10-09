@@ -45,7 +45,7 @@ const RsaKeysTool = () => {
       setPublicKey(arrayBufferToPem(pubExported, "PUBLIC KEY"));
       setPrivateKey(arrayBufferToPem(privExported, "PRIVATE KEY"));
     } catch {
-      setError("Error generando las claves RSA. Verifica que tu navegador soporta Web Crypto API.");
+      setError("Error al generar las claves RSA. Verifica que tu navegador sea compatible con Web Crypto API.");
     } finally {
       setLoading(false);
     }
@@ -54,13 +54,13 @@ const RsaKeysTool = () => {
   return (
     <section>
       <h1 className="public-title mb-2">Generador RSA</h1>
-      <p className="public-lead mb-6">Generar pares de claves RSA publica/privada con Web Crypto API.</p>
+      <p className="public-lead mb-6">Generar pares de claves RSA pública/privada con Web Crypto API.</p>
 
       {error && <ErrorAlert message={error} />}
 
       <div className="public-card">
         <div className="mb-4 flex items-center gap-4">
-          <label className="text-sm text-text-secondary">Tamano de clave:</label>
+          <label className="text-sm text-text-secondary">Tamaño de clave:</label>
           <ToolSelect
             value={keySize}
             onChange={(e) => setKeySize(Number(e.target.value) as KeySize)}
@@ -78,7 +78,7 @@ const RsaKeysTool = () => {
 
         {publicKey && (
           <div className="mb-4">
-            <h3 className="mb-1 text-sm font-semibold text-text-secondary">Clave Publica (SPKI/PEM)</h3>
+            <h3 className="mb-1 text-sm font-semibold text-text-secondary">Clave pública (SPKI/PEM)</h3>
             <ToolOutput className="max-h-48 overflow-auto whitespace-pre-wrap break-all">
               {publicKey}
             </ToolOutput>

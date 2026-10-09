@@ -7,7 +7,7 @@ export default function UuidPage() {
     <>
       <Head>
         <title>UUID v4 | Tools | Portfolio Dev</title>
-        <meta name="description" content="Generar identificadores unicos universales UUID v4" />
+        <meta name="description" content="Generar identificadores únicos universales UUID v4." />
       </Head>
       <ToolsLayout>
         <UuidTool />

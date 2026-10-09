@@ -25,7 +25,7 @@ const ToolsSidebar = ({ isOpen, onClose }: ToolsSidebarProps) => {
         className={`fixed left-0 top-[72px] z-40 h-[calc(100vh-72px)] w-64 overflow-y-auto border-r border-slate-700/60 bg-surface-900/95 backdrop-blur-md transition-transform duration-200 md:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
-        aria-label="Navegacion de herramientas"
+        aria-label="Navegación de herramientas"
       >
         <nav className="p-4">
           <Link

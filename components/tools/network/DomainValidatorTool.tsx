@@ -36,7 +36,7 @@ const DomainValidatorTool = () => {
   return (
     <section>
       <h1 className="public-title mb-2">Validador de Dominio</h1>
-      <p className="public-lead mb-6">Verificar resolucion DNS de un dominio.</p>
+      <p className="public-lead mb-6">Verificar la resolución DNS de un dominio.</p>
 
       {error && <ErrorAlert message={error} />}
 

@@ -30,7 +30,7 @@ const DnsPropagationTool = () => {
       const data = await checkDnsPropagation(domain.trim(), recordType);
       setResult(data);
     } catch (err: unknown) {
-      setError(formatApiError(err, "Error al consultar la propagacion DNS"));
+      setError(formatApiError(err, "Error al consultar la propagación DNS"));
       setResult(null);
     } finally {
       setLoading(false);
@@ -39,7 +39,7 @@ const DnsPropagationTool = () => {
 
   return (
     <section>
-      <h1 className="public-title mb-2">Propagacion DNS</h1>
+      <h1 className="public-title mb-2">Propagación DNS</h1>
       <p className="public-lead mb-6">Consultar registros DNS desde el servidor.</p>
 
       {error && <ErrorAlert message={error} />}

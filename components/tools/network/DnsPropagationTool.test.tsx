@@ -107,7 +107,7 @@ describe("DnsPropagationTool", () => {
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toBeInTheDocument();
-      expect(screen.getByText(/Error al consultar la propagacion DNS/i)).toBeInTheDocument();
+      expect(screen.getByText(/Error al consultar la propagación DNS/i)).toBeInTheDocument();
     });
   });
 });

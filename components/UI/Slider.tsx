@@ -135,7 +135,7 @@ const Slider = ({ title, sectionId, data, introTag, introMessage }: SliderProps)
       </h2>
       {data.length === 0 && (
         <p className="slider-empty-state">
-          No hay contenido publicado en esta seccion todavia.
+          No hay contenido publicado en esta sección todavía.
         </p>
       )}
       <div ref={sliderContainerRef} className="landing-cards-track" role="region" aria-labelledby={sectionId}>
@@ -199,14 +199,14 @@ const Slider = ({ title, sectionId, data, introTag, introMessage }: SliderProps)
         </>
       )}
       {totalPages > 1 && (
-        <div className="slider-pagination" aria-label={`Paginacion de ${title}`}>
+        <div className="slider-pagination" aria-label={`Paginación de ${title}`}>
           {Array.from({ length: totalPages }, (_, index) => (
             <button
               key={`page-${index}`}
               type="button"
               className={`slider-dot ${index === currentPage ? "is-active" : ""}`}
               onClick={() => goToPage(index)}
-              aria-label={`Ir a pagina ${index + 1} de ${Math.max(totalPages, Math.ceil(data.length / cardsPerView))}`}
+              aria-label={`Ir a página ${index + 1} de ${Math.max(totalPages, Math.ceil(data.length / cardsPerView))}`}
               aria-current={index === currentPage}
             />
           ))}

@@ -204,7 +204,7 @@ const SqlVisualizerTool = () => {
         setMermaidLoaded(true);
       })
       .catch(() => {
-        setError("No se pudo cargar la libreria de diagramas.");
+        setError("No se pudo cargar la librería de diagramas.");
       });
   }, []);
 
@@ -267,7 +267,7 @@ const SqlVisualizerTool = () => {
           <div className="public-card">
             <h2 className="mb-2 text-sm font-semibold text-text-secondary">Diagrama ER</h2>
             {!mermaidLoaded ? (
-              <p className="py-8 text-center text-text-muted">Cargando motor de diagramas...</p>
+              <p className="py-8 text-center text-text-muted">Cargando el motor de diagramas...</p>
             ) : svg ? (
               <ToolOutput
                 as="div"
