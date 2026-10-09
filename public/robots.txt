@@ -1,7 +1,9 @@
 User-agent: *
 Allow: /
 
-# Excluir la pagina 404 de la indexacion (aunque ya tiene noindex)
+# Rutas privadas — no indexar
+Disallow: /admin/
+Disallow: /auth/
 Disallow: /404/
 
-Sitemap: https://porfolio-58ea0.web.app/sitemap.xml
+Sitemap: https://www.yonathangutierrez.dev/sitemap.xml

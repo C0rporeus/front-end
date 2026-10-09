@@ -26,6 +26,15 @@ export async function listPublicExperiences(): Promise<Experience[]> {
   return data.items.map(normalizeExperience);
 }
 
+/** Fetch without browser cache; signed GCS URLs must be refreshed for article views. */
+export async function listPublicExperiencesFresh(): Promise<Experience[]> {
+  const data = await apiRequest<{ items: Experience[] }>(API_EXPERIENCES, {
+    method: "GET",
+    cache: "no-store",
+  });
+  return data.items.map(normalizeExperience);
+}
+
 export function clearPublicExperiencesCache() {
   invalidatePublicCache([PUBLIC_EXPERIENCES_CACHE_KEY]);
 }

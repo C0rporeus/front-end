@@ -2,16 +2,25 @@ import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { GetStaticPaths, GetStaticProps } from "next";
-import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
-import { listPublicExperiences } from "@/api/experiences";
 import { API_EXPERIENCES } from "@/api/endpoints";
+import { listPublicExperiencesFresh } from "@/api/experiences";
+
 import LandingHeader from "@/components/layout/landing/LandingHeader";
 import { Experience } from "@/interfaces/Experience";
 import ErrorAlert from "@/components/UI/ErrorAlert";
 import RichTextViewer from "@/components/UI/RichTextViewer";
-import { stripHtml } from "@/utils/html-content";
+import { stripHtml, extractFirstImageFromHtml, removeFirstImageFromHtml } from "@/utils/html-content";
+import {
+  OG_IMAGE_HEIGHT,
+  OG_IMAGE_WIDTH,
+  SITE_NAME,
+  SITE_URL,
+  buildMetaDescription,
+  isGeneratedOGImage,
+  toShareableImageURL,
+} from "@/utils/seo";
 
 const BLOG_TAGS = ["blog", "articulo", "article", "post", "entrada"];
 
@@ -63,23 +72,44 @@ function selectRelated(article: Experience, blogEntries: Experience[]): Experien
   return blogEntries.filter((item) => item.id !== article.id).slice(0, 4);
 }
 
-export const getStaticProps: GetStaticProps<{
-  article: Experience | null;
-  related: Experience[];
-}> = async (context) => {
+export const getStaticProps: GetStaticProps<BlogDetailPageProps> = async (context) => {
   const id = typeof context.params?.id === "string" ? context.params.id : "";
-  if (!id) return { props: { article: null, related: [] } };
+  if (!id) return { props: { article: null, related: [], ogImage: "" } };
   const items = await fetchPublicExperiencesAtBuild();
   const blogEntries = items.filter(hasBlogTag).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   const article = blogEntries.find((item) => item.id === id) ?? null;
   const related = article ? selectRelated(article, blogEntries) : [];
-  return { props: { article, related } };
+  // Do not bake expiring GCS signatures into static HTML/JSON. The browser
+  // fetches fresh signed URLs after hydration; text remains available offline.
+  const withoutSignedImages = (item: Experience): Experience => ({
+    ...item,
+    imageUrls: item.imageUrls.filter((url) => !url.includes("storage.googleapis.com")),
+    body: (item.body ?? "").replace(
+      /<img\b(?=[^>]*\bsrc=["']https?:\/\/storage\.googleapis\.com\/)[^>]*>/gi,
+      "",
+    ),
+  });
+  // og:image se calcula antes de quitar las firmas: los crawlers no ejecutan JS,
+  // así que necesitan una URL permanente ya escrita en el HTML estático.
+  const ogImage = article ? toShareableImageURL(resolveHeroImage(article)) : "";
+  return {
+    props: {
+      article: article ? withoutSignedImages(article) : null,
+      related: related.map(withoutSignedImages),
+      ogImage,
+    },
+  };
+};
+
+type BlogDetailPageProps = {
+  article: Experience | null;
+  related: Experience[];
+  ogImage: string;
 };
 
 const formatDate = (value: string) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "Fecha no disponible";
-
   return new Intl.DateTimeFormat("es-CL", {
     day: "2-digit",
     month: "short",
@@ -87,59 +117,114 @@ const formatDate = (value: string) => {
   }).format(date);
 };
 
-const resolvePreviewImage = (item: Experience) =>
-  item.imageUrls.find((url) => typeof url === "string" && url.trim().length > 0) ?? "";
+/** Primera imagen disponible: imageUrls[] → imagen embebida en body HTML */
+const resolveHeroImage = (item: Experience): string =>
+  item.imageUrls.find((url) => typeof url === "string" && url.trim().length > 0) ??
+  extractFirstImageFromHtml(item.body ?? "") ??
+  "";
 
-type BlogDetailPageProps = {
-  article: Experience | null;
-  related: Experience[];
-};
 
-export default function BlogDetailPage({ article: initialArticle, related: initialRelated }: BlogDetailPageProps) {
-  const router = useRouter();
-  const articleId = typeof router.query.id === "string" ? router.query.id : "";
+export default function BlogDetailPage({
+  article: initialArticle,
+  related: initialRelated,
+  ogImage,
+}: BlogDetailPageProps) {
 
-  const [items, setItems] = useState<Experience[]>([]);
+  const [liveArticle, setLiveArticle] = useState<Experience | null>(null);
+  const [liveRelated, setLiveRelated] = useState<Experience[]>([]);
+  const [loadedHeroImage, setLoadedHeroImage] = useState("");
+
   const [loading, setLoading] = useState(!initialArticle);
   const [error, setError] = useState("");
 
+  // En static export con fallback:false, initialArticle siempre es la fuente de verdad.
+  // loading:false inmediato cuando llegan los props estáticos.
   useEffect(() => {
-    if (initialArticle && items.length === 0) return;
-    listPublicExperiences()
-      .then((data) => setItems(data))
-      .catch(() =>
-        setError("No fue posible cargar el articulo por ahora. Reintenta en unos minutos."),
-      )
-      .finally(() => setLoading(false));
-  }, [initialArticle, items.length]);
+    setLoading(!initialArticle);
+  }, [initialArticle]);
 
-  const blogEntries = useMemo(
-    () => items.filter(hasBlogTag).sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
-    [items],
-  );
+  useEffect(() => {
+    let active = true;
+    const refreshImages = async () => {
+      if (!initialArticle) return;
+      try {
+        const items = await listPublicExperiencesFresh();
+        if (!active) return;
+        const blogEntries = items.filter(hasBlogTag).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+        const current = blogEntries.find((item) => item.id === initialArticle.id);
+        if (current) {
+          setLiveArticle(current);
+          setLiveRelated(selectRelated(current, blogEntries));
+        }
+      } catch {
+        // Conservamos el contenido estático si la API no está disponible.
+      }
+    };
+    void refreshImages();
+    return () => { active = false; };
+  }, [initialArticle]);
 
-  const article = useMemo(() => {
-    if (initialArticle && initialArticle.id === articleId) return initialArticle;
-    return blogEntries.find((item) => item.id === articleId);
-  }, [initialArticle, articleId, blogEntries]);
+  // Usar initialArticle directamente — elimina la race condition con router.query
+  const article = liveArticle ?? initialArticle ?? null;
+  const related = liveArticle ? liveRelated : (initialArticle ? initialRelated : []);
 
-  const related = useMemo(() => {
-    if (article && initialArticle && article.id === initialArticle.id) return initialRelated;
-    if (!article) return [];
-    return selectRelated(article, blogEntries);
-  }, [article, initialArticle, initialRelated, blogEntries]);
+  const heroImage = article ? resolveHeroImage(article) : "";
+  // Meta tags solo desde los props estáticos: es lo que leen los crawlers sin JS.
+  const canonicalUrl = initialArticle ? `${SITE_URL}/blog/${initialArticle.id}/` : SITE_URL;
+  const metaDescription = initialArticle
+    ? buildMetaDescription(initialArticle.summary, initialArticle.body)
+    : "";
+
+  // Si el hero proviene del body (imageUrls vacío), ocultar la primera imagen del cuerpo
+  // para evitar duplicidad. Si imageUrls tiene valor, el body se muestra íntegro.
+  const heroIsFromBody =
+    (article?.imageUrls?.filter((u) => u?.trim()).length ?? 0) === 0 && !!heroImage;
+  const bodyHtml = heroIsFromBody
+    ? removeFirstImageFromHtml(article?.body ?? "")
+    : (article?.body ?? "");
 
   return (
     <>
       <Head>
-        <title>{article ? `${article.title} | Blog` : "Articulo | Blog"}</title>
+        <title>{article ? `${article.title} | Blog` : "Artículo | Blog"}</title>
+        {initialArticle && (
+          <>
+            <meta name="description" content={metaDescription} key="description" />
+            <link rel="canonical" href={canonicalUrl} key="canonical" />
+            <meta property="og:type" content="article" key="og:type" />
+            <meta property="og:site_name" content={SITE_NAME} key="og:site_name" />
+            <meta property="og:locale" content="es_LA" key="og:locale" />
+            <meta property="og:title" content={initialArticle.title} key="og:title" />
+            <meta property="og:description" content={metaDescription} key="og:description" />
+            <meta property="og:url" content={canonicalUrl} key="og:url" />
+            <meta property="article:published_time" content={initialArticle.createdAt} key="article:published_time" />
+            <meta property="article:modified_time" content={initialArticle.updatedAt} key="article:modified_time" />
+            <meta name="twitter:card" content={ogImage ? "summary_large_image" : "summary"} key="twitter:card" />
+            <meta name="twitter:title" content={initialArticle.title} key="twitter:title" />
+            <meta name="twitter:description" content={metaDescription} key="twitter:description" />
+            {ogImage && (
+              <>
+                <meta property="og:image" content={ogImage} key="og:image" />
+                <meta property="og:image:alt" content={initialArticle.title} key="og:image:alt" />
+                {isGeneratedOGImage(ogImage) && (
+                  <>
+                    <meta property="og:image:type" content="image/jpeg" key="og:image:type" />
+                    <meta property="og:image:width" content={String(OG_IMAGE_WIDTH)} key="og:image:width" />
+                    <meta property="og:image:height" content={String(OG_IMAGE_HEIGHT)} key="og:image:height" />
+                  </>
+                )}
+                <meta name="twitter:image" content={ogImage} key="twitter:image" />
+              </>
+            )}
+          </>
+        )}
       </Head>
 
       <LandingHeader />
 
-      <main className="public-main pt-[96px] md:pt-[104px]">
+      <main className="public-main article-page pt-[104px] md:pt-[120px]">
         {loading && (
-          <p className="mx-auto w-full max-w-5xl text-text-secondary">Cargando articulo...</p>
+          <p className="mx-auto w-full max-w-5xl text-text-secondary">Cargando artículo...</p>
         )}
 
         {error && (
@@ -150,7 +235,7 @@ export default function BlogDetailPage({ article: initialArticle, related: initi
 
         {!loading && !error && !article && (
           <div className="mx-auto w-full max-w-5xl">
-            <p className="text-text-secondary">No encontramos este articulo o no esta publicado.</p>
+            <p className="text-text-secondary">No encontramos este artículo o no está publicado.</p>
             <Link
               href="/blog"
               className="mt-4 inline-flex items-center rounded-lg border border-slate-600 px-4 py-2 text-sm text-text-secondary hover:text-text-primary"
@@ -162,78 +247,80 @@ export default function BlogDetailPage({ article: initialArticle, related: initi
 
         {!loading && !error && article && (
           <>
-            <article className="mx-auto w-full max-w-5xl">
-              <div className="public-card">
-                <p className="mb-3 text-xs uppercase tracking-[0.14em] text-text-muted">Articulo</p>
-                <h1 className="mb-3 text-3xl font-semibold leading-tight md:text-4xl">{article.title}</h1>
-                <p className="mb-4 text-text-secondary">
-                  {article.summary?.trim() || "Resumen no disponible."}
-                </p>
+            <article className="article-layout mx-auto w-full max-w-6xl">
+              <header className="article-hero">
+                {heroImage && (
+                  <Image
+                    src={heroImage}
+                    alt=""
+                    aria-hidden="true"
+                    fill
+                    className={`article-hero-image${loadedHeroImage === heroImage ? " is-loaded" : ""}`}
+                    sizes="(max-width: 768px) 100vw, 1152px"
+                    loading="lazy"
+                    onLoad={() => setLoadedHeroImage(heroImage)}
+                  />
+                )}
+                <div className="article-hero-overlay" aria-hidden="true" />
+                <div className="article-heading article-hero-content">
+                  <Link href="/blog" className="article-back-link">
+                    <span aria-hidden="true">←</span>
+                    Todos los artículos
+                  </Link>
+                  <p className="article-kicker">Artículo técnico</p>
+                  <h1 className="article-title">{article.title}</h1>
+                  <p className="article-summary">
+                    {article.summary?.trim() || "Resumen no disponible."}
+                  </p>
 
-                <div className="mb-6 flex flex-wrap gap-2 text-xs text-text-muted">
-                  <span className="rounded-md border border-slate-700/70 bg-surface-900/70 px-2 py-1">
-                    Publicado: {formatDate(article.createdAt)}
-                  </span>
-                  <span className="rounded-md border border-slate-700/70 bg-surface-900/70 px-2 py-1">
-                    Actualizado: {formatDate(article.updatedAt)}
-                  </span>
+                  <div className="article-meta" aria-label="Fechas del artículo">
+                    <span>
+                      Publicado <time dateTime={article.createdAt}>{formatDate(article.createdAt)}</time>
+                    </span>
+                    <span className="article-meta-divider" aria-hidden="true">·</span>
+                    <span>
+                      Actualizado <time dateTime={article.updatedAt}>{formatDate(article.updatedAt)}</time>
+                    </span>
+                  </div>
                 </div>
+              </header>
 
-                {resolvePreviewImage(article) && (
-                  <div className="relative mb-6 h-56 overflow-hidden rounded-xl border border-slate-700/70 md:h-80">
-                    <Image
-                      src={resolvePreviewImage(article)}
-                      alt={`Imagen principal de ${article.title}`}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, 960px"
-                    />
-                  </div>
-                )}
+              <RichTextViewer content={bodyHtml} className="article-content" />
 
-                <RichTextViewer content={article.body} className="mb-6 text-text-secondary" />
-
-                {article.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {article.tags.map((tag) => (
-                      <span
-                        key={`${article.id}-${tag}`}
-                        className="rounded-full border border-slate-600/80 bg-surface-900/70 px-3 py-1 text-xs text-text-secondary"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
+              {article.tags.length > 0 && (
+                <footer className="article-tags" aria-label="Etiquetas del artículo">
+                  {article.tags.map((tag) => (
+                    <span key={`${article.id}-${tag}`} className="article-tag">
+                      #{tag}
+                    </span>
+                  ))}
+                </footer>
+              )}
             </article>
 
-            <section className="mx-auto mt-8 w-full max-w-5xl">
-              <div className="mb-4 flex items-center justify-between gap-3">
-                <h2 className="text-2xl font-semibold">Articulos relacionados</h2>
-                <Link
-                  href="/blog"
-                  className="text-sm text-sky-200 hover:text-sky-100"
-                >
-                  Ver todos
+            <section className="article-related">
+              <div className="article-related-heading">
+                <h2>Artículos relacionados</h2>
+                <Link href="/blog" className="article-back-link">
+                  Ver todos <span aria-hidden="true">→</span>
                 </Link>
               </div>
 
               {related.length === 0 ? (
-                <p className="text-text-secondary">No hay articulos relacionados por ahora.</p>
+                <p className="text-text-secondary">No hay artículos relacionados por ahora.</p>
               ) : (
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="article-related-grid">
                   {related.map((item) => (
-                    <article key={item.id} className="public-card">
-                      <h3 className="mb-2 text-lg font-semibold leading-tight">{item.title}</h3>
-                      <p className="mb-3 text-sm text-text-secondary">
-                        {item.summary?.trim() || stripHtml(item.body ?? "").trim() || "Articulo en actualizacion."}
+                    <article key={item.id} className="article-related-card">
+                      <h3>{item.title}</h3>
+                      <p>
+                        {item.summary?.trim() || stripHtml(item.body ?? "").trim() || "Artículo en actualización."}
                       </p>
-                      <div className="mb-4 flex flex-wrap gap-2">
+                      <div className="article-related-tags">
                         {item.tags.slice(0, 4).map((tag) => (
                           <span
                             key={`${item.id}-related-${tag}`}
-                            className="rounded-full border border-slate-600/80 bg-surface-900/70 px-3 py-1 text-xs text-text-secondary"
+                            className="article-tag"
                           >
                             #{tag}
                           </span>
@@ -241,9 +328,9 @@ export default function BlogDetailPage({ article: initialArticle, related: initi
                       </div>
                       <Link
                         href={`/blog/${item.id}`}
-                        className="inline-flex items-center rounded-lg border border-sky-400/40 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-200 transition hover:border-sky-300/70 hover:bg-sky-500/20"
+                        className="article-related-link"
                       >
-                        Leer articulo
+                        Leer artículo <span aria-hidden="true">→</span>
                       </Link>
                     </article>
                   ))}

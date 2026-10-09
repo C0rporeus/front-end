@@ -3,6 +3,7 @@ import {
   deleteExperience,
   listPrivateExperiences,
   listPublicExperiences,
+  listPublicExperiencesFresh,
   updateExperience,
 } from "./experiences";
 
@@ -26,6 +27,21 @@ describe("experiences api", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining("/api/experiences"),
       expect.objectContaining({ method: "GET" })
+    );
+  });
+
+  it("fetches fresh public data without reusing signed image URLs from cache", async () => {
+    const fetchMock = jest.fn().mockResolvedValue({
+      ok: true,
+      text: async () => JSON.stringify({ items: [] }),
+      headers: new Headers(),
+    });
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    await listPublicExperiencesFresh();
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("/api/experiences"),
+      expect.objectContaining({ method: "GET", cache: "no-store", credentials: "include" }),
     );
   });
 
