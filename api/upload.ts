@@ -18,11 +18,18 @@ function isAllowedImageType(type: string): boolean {
   return ALLOWED_IMAGE_TYPES.includes(type);
 }
 
+export type UploadedImage = {
+  /** URL canónica (sin firma) que se persiste en el contenido. */
+  url: string;
+  /** URL firmada temporal para renderizar la imagen; el bucket es privado. */
+  previewUrl: string;
+};
+
 /**
  * Sube un archivo de imagen al backend; el backend lo almacena en GCP/Firebase Storage
- * y devuelve la URL pública. Requiere JWT.
+ * y devuelve la URL canónica junto con una URL firmada para vista previa. Requiere JWT.
  */
-export async function uploadImage(token: string, file: File): Promise<string> {
+export async function uploadImageWithPreview(file: File): Promise<UploadedImage> {
   if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
     throw new Error(
       `El archivo supera el límite de ${MAX_IMAGE_UPLOAD_BYTES / 1024 / 1024} MB`,
@@ -39,9 +46,7 @@ export async function uploadImage(token: string, file: File): Promise<string> {
 
   const response = await fetch(`${baseURL}${API_PRIVATE_UPLOAD_IMAGE}`, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    credentials: "include",
     body: formData,
   });
 
@@ -49,7 +54,12 @@ export async function uploadImage(token: string, file: File): Promise<string> {
     window.dispatchEvent(new CustomEvent("auth:expired"));
   }
 
-  const data = (await response.json()) as { url?: string; message?: string; code?: string };
+  const data = (await response.json()) as {
+    url?: string;
+    previewUrl?: string;
+    message?: string;
+    code?: string;
+  };
   if (!response.ok) {
     throw new ApiClientError(
       data.message ?? "No fue posible subir la imagen",
@@ -59,5 +69,14 @@ export async function uploadImage(token: string, file: File): Promise<string> {
   if (typeof data.url !== "string" || !data.url.trim()) {
     throw new ApiClientError("La respuesta del servidor no incluyó la URL de la imagen");
   }
-  return data.url.trim();
+  const url = data.url.trim();
+  const previewUrl = typeof data.previewUrl === "string" && data.previewUrl.trim()
+    ? data.previewUrl.trim()
+    : url;
+  return { url, previewUrl };
+}
+
+/** Sube una imagen y devuelve solo la URL canónica para persistir. */
+export async function uploadImage(file: File): Promise<string> {
+  return (await uploadImageWithPreview(file)).url;
 }

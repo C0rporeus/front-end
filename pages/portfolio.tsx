@@ -4,33 +4,14 @@ import { useEffect, useMemo, useState } from "react";
 import { listPublicExperiences } from "@/api/experiences";
 import LandingHeader from "@/components/layout/landing/LandingHeader";
 import { Experience } from "@/interfaces/Experience";
-import RichTextViewer from "@/components/UI/RichTextViewer";
-
-const normalizeText = (value: string) =>
-  value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-
-const BLOG_TAGS = ["blog", "articulo", "article", "post", "entrada"];
-const PORTFOLIO_TAGS = ["portfolio", "portafolio", "proyecto", "project", "muestra", "case"];
-
-const hasAnyTag = (item: Experience, expected: string[]) => {
-  const normalizedTags = item.tags.map(normalizeText);
-  return normalizedTags.some((tag) => expected.some((expectedTag) => tag === expectedTag || tag.includes(expectedTag)));
-};
+import CapabilityGrid from "@/components/content/CapabilityGrid";
+import ExperienceTimeline from "@/components/content/ExperienceTimeline";
+import PortfolioShowcaseCard from "@/components/content/PortfolioShowcaseCard";
+import { filterByKind } from "@/utils/content-kind";
 
 export default function PortfolioPage() {
   const [items, setItems] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeImageByExperience, setActiveImageByExperience] = useState<Record<string, number>>({});
-
-  const updateImageIndex = (experienceId: string, nextIndex: number) => {
-    setActiveImageByExperience((previous) => ({
-      ...previous,
-      [experienceId]: nextIndex,
-    }));
-  };
 
   useEffect(() => {
     listPublicExperiences()
@@ -39,14 +20,23 @@ export default function PortfolioPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const portfolioItems = useMemo(() => {
-    const withoutBlog = items.filter((item) => !hasAnyTag(item, BLOG_TAGS));
-    const taggedAsPortfolio = withoutBlog.filter((item) => hasAnyTag(item, PORTFOLIO_TAGS));
-
-    // Si existen items etiquetados como portafolio, se priorizan para evitar mezcla de categorias.
-    const source = taggedAsPortfolio.length > 0 ? taggedAsPortfolio : withoutBlog;
-    return [...source].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  const sections = useMemo(() => {
+    const sorted = [...items].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    return {
+      skills: filterByKind(sorted, "skill"),
+      samples: filterByKind(sorted, "portfolio"),
+      experiences: filterByKind(items, "experience").sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    };
   }, [items]);
+
+  // Los anclajes (#skill-…, #exp-…) llegan antes que el contenido del CMS; se resuelven al cargar.
+  useEffect(() => {
+    if (loading || !window.location.hash) return;
+    document.getElementById(decodeURIComponent(window.location.hash.slice(1)))?.scrollIntoView({ block: "start" });
+  }, [loading]);
+
+  const isEmpty =
+    sections.skills.length + sections.samples.length + sections.experiences.length === 0;
 
   return (
     <>
@@ -58,69 +48,42 @@ export default function PortfolioPage() {
         <section className="public-page-shell mx-auto w-full max-w-5xl">
           <h1 className="public-title">Portafolio y experiencia</h1>
           <p className="public-lead">
-            Seleccion de experiencias publicadas, enfocadas en impacto tecnico y resultados.
+            Selección de experiencias publicadas, enfocadas en impacto técnico y resultados.
           </p>
         </section>
         {loading && (
           <p className="mx-auto mt-6 w-full max-w-5xl text-text-secondary">Cargando experiencias...</p>
         )}
-        {!loading && portfolioItems.length === 0 && (
+        {!loading && isEmpty && (
           <p className="mx-auto mt-6 w-full max-w-5xl text-text-secondary">
-            Aun no hay experiencias publicadas. Puedes agregarlas desde el panel de administracion.
+            Aún no hay experiencias publicadas. Puedes agregarlas desde el panel de administración.
           </p>
         )}
-        <div className="mx-auto mt-8 grid w-full max-w-5xl gap-4 md:gap-5">
-          {portfolioItems.map((item) => (
-            <article id={`exp-${item.id}`} key={item.id} className="public-card">
-              {item.imageUrls.length > 0 && (
-                <div className="mb-4 rounded-xl border border-slate-700/70 bg-surface-900/55 p-3">
-                  <div className="relative overflow-hidden rounded-lg border border-slate-700/60">
-                    <img
-                      src={item.imageUrls[activeImageByExperience[item.id] ?? 0]}
-                      alt={`Material fotografico de ${item.title}`}
-                      className="h-64 w-full object-cover md:h-80"
-                    />
-                  </div>
-                  {item.imageUrls.length > 1 && (
-                    <div className="mt-3 flex items-center justify-between gap-3">
-                      <button
-                        type="button"
-                        className="rounded-md border border-slate-600 bg-surface-900/70 px-3 py-1 text-sm text-text-secondary hover:bg-surface-800/70 hover:text-text-primary"
-                        onClick={() => {
-                          const current = activeImageByExperience[item.id] ?? 0;
-                          const previousImage = current <= 0 ? item.imageUrls.length - 1 : current - 1;
-                          updateImageIndex(item.id, previousImage);
-                        }}
-                      >
-                        Anterior
-                      </button>
-                      <p className="text-xs text-text-muted">
-                        Imagen {(activeImageByExperience[item.id] ?? 0) + 1} de {item.imageUrls.length}
-                      </p>
-                      <button
-                        type="button"
-                        className="rounded-md border border-slate-600 bg-surface-900/70 px-3 py-1 text-sm text-text-secondary hover:bg-surface-800/70 hover:text-text-primary"
-                        onClick={() => {
-                          const current = activeImageByExperience[item.id] ?? 0;
-                          const nextImage = current >= item.imageUrls.length - 1 ? 0 : current + 1;
-                          updateImageIndex(item.id, nextImage);
-                        }}
-                      >
-                        Siguiente
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-              <h2 className="mb-2 text-xl font-semibold">{item.title}</h2>
-              <p className="mb-2 text-text-secondary">{item.summary}</p>
-              <RichTextViewer content={item.body} className="text-sm text-text-muted" />
-              {item.tags.length > 0 && (
-                <p className="mt-3 text-xs text-text-muted">Tags: {item.tags.join(", ")}</p>
-              )}
-            </article>
-          ))}
-        </div>
+        {sections.skills.length > 0 && (
+          <section className="content-section" aria-labelledby="portafolio-capacidades">
+            <h2 id="portafolio-capacidades" className="content-section-heading">Capacidades</h2>
+            <p className="content-section-lead">Áreas en las que aporto criterio técnico y el stack asociado.</p>
+            <CapabilityGrid items={sections.skills} />
+          </section>
+        )}
+        {sections.samples.length > 0 && (
+          <section className="content-section" aria-labelledby="portafolio-muestras">
+            <h2 id="portafolio-muestras" className="content-section-heading">Muestras</h2>
+            <p className="content-section-lead">Trabajo entregado, con evidencia visual del resultado.</p>
+            <div className="grid gap-4 md:gap-5">
+              {sections.samples.map((item) => (
+                <PortfolioShowcaseCard key={item.id} item={item} />
+              ))}
+            </div>
+          </section>
+        )}
+        {sections.experiences.length > 0 && (
+          <section className="content-section" aria-labelledby="portafolio-trayectoria">
+            <h2 id="portafolio-trayectoria" className="content-section-heading">Trayectoria</h2>
+            <p className="content-section-lead">Experiencias en orden cronológico: contexto, decisiones y resultado.</p>
+            <ExperienceTimeline items={sections.experiences} />
+          </section>
+        )}
       </main>
     </>
   );

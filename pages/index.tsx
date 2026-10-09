@@ -13,13 +13,8 @@ import { listPublicSkills } from "@/api/skills";
 import { Experience } from "@/interfaces/Experience";
 import { Skill } from "@/interfaces/Skill";
 import { SliderItem } from "@/components/UI/Slider";
-import { stripHtml } from "@/utils/html-content";
-
-const normalizeText = (value: string) =>
-  value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
+import { extractFirstImageFromHtml, stripHtml } from "@/utils/html-content";
+import { filterByKind, resolveContentKind } from "@/utils/content-kind";
 
 type SliderMappable = {
   id: string;
@@ -32,25 +27,12 @@ type SliderMappable = {
 const mapToSliderItem = (item: SliderMappable, urlPrefix: string, ctaLabel: string): SliderItem => ({
   id: item.id,
   title: item.title,
-  description: item.summary?.trim() || stripHtml(item.body ?? "").trim() || "Contenido en actualizacion.",
-  image: item.imageUrls?.[0] ?? "",
+      description: item.summary?.trim() || stripHtml(item.body ?? "").trim() || "Contenido en actualización.",
+  image: item.imageUrls?.[0] || extractFirstImageFromHtml(item.body ?? "") || "",
   url: `${urlPrefix}${item.id}`,
   ctaLabel,
 });
 
-const selectItemsForSection = (
-  items: Experience[],
-  keywords: string[],
-): SliderItem[] => {
-  const normalizedKeywords = keywords.map(normalizeText);
-  const matching = items.filter((item) => {
-    const haystack = normalizeText(
-      [item.title, item.summary, item.body, item.tags.join(" ")].join(" "),
-    );
-    return normalizedKeywords.some((keyword) => haystack.includes(keyword));
-  });
-  return matching.slice(0, 8).map((item) => mapToSliderItem(item, "/portfolio#exp-", "Ver experiencia"));
-};
 
 const Home = () => {
   const [experiences, setExperiences] = useState<Experience[]>([]);
@@ -73,55 +55,46 @@ const Home = () => {
   }, []);
 
   const sortedExperiences = useMemo(
-    () =>
-      [...experiences].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
+    () => [...experiences].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
     [experiences],
   );
 
+  // Cada sección filtra por tipo de contenido (tags), nunca por palabras del cuerpo,
+  // para que una capacidad no reaparezca como artículo o proyecto.
   const blogItems = useMemo(
     () =>
-      selectItemsForSection(sortedExperiences, [
-        "blog",
-        "articulo",
-        "observabilidad",
-        "seguridad",
-        "arquitectura",
-      ]).map((item) => ({
-        ...item,
-        url: `/blog/${item.id}`,
-        ctaLabel: "Leer articulo",
-      })),
+      filterByKind(sortedExperiences, "blog")
+        .slice(0, 8)
+        .map((item) => mapToSliderItem(item, "/blog/", "Leer artículo")),
     [sortedExperiences],
   );
 
   const skillsItems = useMemo(
-    () =>
-      [...skills]
-        .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
-        .slice(0, 8)
-        .map((item) => mapToSliderItem(item, "/portfolio#skill-", "Ver capacidad")),
+    () => [...skills].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 6),
     [skills],
   );
 
   const projectsItems = useMemo(
     () =>
-      selectItemsForSection(sortedExperiences, [
-        "proyecto",
-        "case",
-        "implementacion",
-        "platform",
-        "producto",
-      ]),
+      filterByKind(sortedExperiences, "portfolio", "experience")
+        .slice(0, 8)
+        .map((item) =>
+          mapToSliderItem(
+            item,
+            "/portfolio#exp-",
+            resolveContentKind(item) === "portfolio" ? "Ver muestra" : "Ver experiencia",
+          ),
+        ),
     [sortedExperiences],
   );
 
   return (
     <div className="min-h-screen bg-transparent text-text-primary">
       <Head>
-        <title>Yonathan Gutierrez R | Consultoria Tecnologica</title>
+        <title>Yonathan Gutierrez | Software, infraestructura y seguridad</title>
         <meta
           name="description"
-          content="Consultoria en desarrollo de productos digitales, infraestructura y seguridad con enfoque en resultados."
+          content="Artículos y proyectos sobre ingeniería de software, infraestructura, seguridad y operación de sistemas."
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>

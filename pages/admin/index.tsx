@@ -40,7 +40,10 @@ import { useAuth } from "@/context/auth-context";
 import { Experience, ExperiencePayload } from "@/interfaces/Experience";
 import { formatApiError } from "@/utils/format-api-error";
 import ErrorAlert from "@/components/UI/ErrorAlert";
-import { uploadImage } from "@/api/upload";
+import { uploadImageWithPreview } from "@/api/upload";
+import { countImagesInHtml } from "@/utils/html-content";
+import { filterAdminContent } from "@/utils/admin-content";
+import { CONTENT_KIND_LABELS, resolveContentKind } from "@/utils/content-kind";
 
 type AdminView = "blog" | "experiences" | "skills" | "portfolio" | "ops";
 
@@ -62,6 +65,11 @@ function parseImageURLs(value: string): string[] {
     .filter(Boolean);
 }
 
+/** Quita la firma temporal de una URL de GCS; la API entrega URLs firmadas en lectura. */
+function toCanonicalImageURL(url: string): string {
+  return url.includes("X-Goog-Signature") ? url.split("?")[0] : url;
+}
+
 function resolveAdminView(value: string | undefined): AdminView {
   if (
     value === "blog" ||
@@ -77,7 +85,7 @@ function resolveAdminView(value: string | undefined): AdminView {
 
 export default function AdminPage() {
   const router = useRouter();
-  const { isAuthenticated, logout, token } = useAuth();
+  const { isAuthenticated, isAuthReady, logout, token } = useAuth();
   const [isHydrated, setIsHydrated] = useState(false);
   const [items, setItems] = useState<Experience[]>([]);
   const [error, setError] = useState("");
@@ -91,6 +99,9 @@ export default function AdminPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tagsInput, setTagsInput] = useState("");
   const [uploadingImages, setUploadingImages] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  // URL canónica (persistida) -> URL firmada para renderizar; el bucket es privado.
+  const [imagePreviews, setImagePreviews] = useState<Record<string, string>>({});
   const [form, setForm] = useState<ExperiencePayload>({
     title: "",
     summary: "",
@@ -102,27 +113,13 @@ export default function AdminPage() {
   const viewParam = Array.isArray(router.query.view) ? router.query.view[0] : router.query.view;
   const activeView = useMemo(() => resolveAdminView(viewParam), [viewParam]);
   const isContentView = activeView !== "ops";
+  const isEditingBlogEntry = activeView === "blog" && editingId !== null;
 
   const sortedItems = useMemo(
     () => [...items].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
     [items]
   );
-  const filteredItems = useMemo(() => {
-    if (activeView === "blog") {
-      return sortedItems.filter((item) => item.tags.map(normalizeTag).includes("blog"));
-    }
-    if (activeView === "skills") {
-      return sortedItems.filter((item) =>
-        item.tags
-          .map(normalizeTag)
-          .some((tag) => tag === "skill" || tag === "skills" || tag.includes("habilidad") || tag.includes("capacidad"))
-      );
-    }
-    if (activeView === "portfolio") {
-      return sortedItems.filter((item) => item.tags.map(normalizeTag).includes("portfolio"));
-    }
-    return sortedItems;
-  }, [activeView, sortedItems]);
+  const filteredItems = useMemo(() => filterAdminContent(sortedItems, activeView), [activeView, sortedItems]);
 
   const refreshItems = useCallback(async () => {
     if (!token) return;
@@ -156,12 +153,31 @@ export default function AdminPage() {
     return "bg-emerald-600 text-white";
   };
 
+  const clearContentForm = () => {
+    setForm({
+      title: "",
+      summary: "",
+      body: "",
+      imageUrls: [],
+      tags: [],
+      visibility: "public",
+    });
+    setTagsInput("");
+    setImagePreviews({});
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    clearContentForm();
+    setUploadError("");
+  };
+
   useEffect(() => {
     setIsHydrated(true);
   }, []);
 
   useEffect(() => {
-    if (!isHydrated) return;
+    if (!isHydrated || !isAuthReady) return;
 
     if (!isAuthenticated || !token) {
       router.replace("/auth/login");
@@ -173,9 +189,9 @@ export default function AdminPage() {
       .finally(() => setLoading(false));
 
     refreshOps().catch((err: unknown) => setError(formatApiError(err, "No se pudo cargar observabilidad")));
-  }, [isHydrated, isAuthenticated, router, token, refreshItems, refreshOps]);
+  }, [isHydrated, isAuthReady, isAuthenticated, router, token, refreshItems, refreshOps]);
 
-  if (!isHydrated || !isAuthenticated) {
+  if (!isHydrated || !isAuthReady || !isAuthenticated) {
     return null;
   }
 
@@ -208,15 +224,7 @@ export default function AdminPage() {
       } else {
         await createExperience(token, payload);
       }
-      setForm({
-        title: "",
-        summary: "",
-        body: "",
-        imageUrls: [],
-        tags: [],
-        visibility: "public",
-      });
-      setTagsInput("");
+      clearContentForm();
       setEditingId(null);
       await refreshItems();
     } catch (err: unknown) {
@@ -224,27 +232,35 @@ export default function AdminPage() {
     }
   };
 
+  const removeImageUrl = (index: number) => {
+    setForm((prev) => ({
+      ...prev,
+      imageUrls: prev.imageUrls.filter((_, i) => i !== index),
+    }));
+  };
+
   const onUploadImages = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0 || !token) return;
+    const captured = Array.from(files);
     event.target.value = "";
-    setError("");
+    setUploadError("");
     setUploadingImages(true);
     try {
-      const urls = await Promise.all(
-        Array.from(files).map((file) => uploadImage(token, file)),
-      );
+      const uploaded = await Promise.all(captured.map((file) => uploadImageWithPreview(file)));
+      setImagePreviews((previous) => ({
+        ...previous,
+        ...Object.fromEntries(uploaded.map(({ url, previewUrl }) => [url, previewUrl])),
+      }));
       setForm((previous) => ({
         ...previous,
-        imageUrls: Array.from(
-          new Set([...previous.imageUrls, ...urls]),
-        ),
+        imageUrls: Array.from(new Set([...previous.imageUrls, ...uploaded.map(({ url }) => url)])),
       }));
     } catch (err: unknown) {
-      setError(
+      setUploadError(
         err instanceof Error
           ? err.message
-          : "No fue posible subir las imágenes. Revisa la consola.",
+          : "No fue posible subir las imágenes.",
       );
     } finally {
       setUploadingImages(false);
@@ -263,14 +279,14 @@ export default function AdminPage() {
           router.push("/");
         }}
       />
-      <main className="mx-auto max-w-5xl px-4 pb-10 pt-[98px] text-text-primary md:px-8 md:pt-[108px]">
+      <main className={`mx-auto px-4 pb-10 pt-[98px] text-text-primary md:px-8 md:pt-[108px] ${isEditingBlogEntry ? "max-w-7xl" : "max-w-5xl"}`}>
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Panel privado del portafolio</h1>
           <p className="mt-2 text-text-secondary">
             Vista activa:{" "}
             <span className="font-semibold text-text-primary">
               {activeView === "blog"
-                ? "Articulos del blog"
+                ? "Artículos del blog"
                 : activeView === "skills"
                   ? "Capacidades clave"
                 : activeView === "portfolio"
@@ -297,24 +313,45 @@ export default function AdminPage() {
               {editingId
                 ? "Editar entrada"
                 : activeView === "blog"
-                  ? "Nuevo articulo"
+                  ? "Nuevo artículo"
                   : activeView === "skills"
                     ? "Nueva capacidad"
                   : activeView === "portfolio"
                     ? "Nueva muestra de portafolio"
                     : "Nueva experiencia"}
             </h2>
-            <form className="grid gap-3" onSubmit={onSubmit}>
+            <form className={isEditingBlogEntry ? "admin-blog-edit-form" : "grid gap-3"} onSubmit={onSubmit}>
+              {isEditingBlogEntry && (
+                <div className="admin-blog-edit-actions">
+                  <div className="min-w-0">
+                    <span className="block text-xs uppercase tracking-[0.12em] text-text-muted">Edición en curso</span>
+                    <span className="block truncate font-medium">{form.title || "Artículo sin título"}</span>
+                  </div>
+                  <div className="flex shrink-0 gap-2">
+                    <button className="rounded bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-500" type="submit">
+                      Actualizar
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded bg-slate-600 px-4 py-2 text-white hover:bg-slate-500"
+                      onClick={cancelEditing}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              )}
+              <div className={isEditingBlogEntry ? "admin-blog-edit-main" : "contents"}>
               <input
                 className="rounded border border-slate-600 bg-surface-900/85 p-2 text-text-primary"
                 placeholder={
                   activeView === "blog"
-                    ? "Titulo del articulo"
+                    ? "Título del artículo"
                     : activeView === "skills"
-                      ? "Titulo de la capacidad"
+                      ? "Título de la capacidad"
                     : activeView === "portfolio"
-                      ? "Titulo de la muestra"
-                      : "Titulo de la experiencia"
+                      ? "Título de la muestra"
+                      : "Título de la experiencia"
                 }
                 value={form.title}
                 onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
@@ -326,24 +363,41 @@ export default function AdminPage() {
                 value={form.summary}
                 onChange={(e) => setForm((prev) => ({ ...prev, summary: e.target.value }))}
               />
-              <RichTextEditor
-                value={form.body}
-                onChange={(html) => setForm((prev) => ({ ...prev, body: html }))}
-                placeholder={
-                  activeView === "blog"
-                    ? "Contenido del articulo"
-                    : activeView === "skills"
-                      ? "Detalle de la capacidad, stack o nivel"
-                    : activeView === "portfolio"
-                      ? "Descripcion de la muestra y resultado"
-                      : "Detalle tecnico y resultados"
-                }
-                onUploadImage={token ? (file) => uploadImage(token, file) : undefined}
-              />
+              <div className={isEditingBlogEntry ? "admin-blog-edit-richtext" : "contents"}>
+                <RichTextEditor
+                  value={form.body}
+                  onChange={(html) => setForm((prev) => ({ ...prev, body: html }))}
+                  placeholder={
+                    activeView === "blog"
+                      ? "Contenido del artículo"
+                      : activeView === "skills"
+                        ? "Detalle de la capacidad, stack o nivel"
+                      : activeView === "portfolio"
+                        ? "Descripción de la muestra y resultado"
+                        : "Detalle técnico y resultados"
+                  }
+                  onUploadImage={
+                    token ? async (file) => (await uploadImageWithPreview(file)).previewUrl : undefined
+                  }
+                />
+              </div>
+              </div>
+              <div
+                className={isEditingBlogEntry ? "admin-blog-edit-sidebar" : "contents"}
+                role={isEditingBlogEntry ? "complementary" : undefined}
+                aria-label={isEditingBlogEntry ? "Metadatos del artículo" : undefined}
+              >
+              {isEditingBlogEntry && (
+                <div className="admin-blog-edit-sidebar-heading">
+                  <h3 className="font-semibold">Detalles de publicación</h3>
+                  <p className="text-xs text-text-muted">Imágenes, etiquetas y visibilidad</p>
+                </div>
+              )}
               <textarea
                 className="rounded border border-slate-600 bg-surface-900/85 p-2 text-text-primary"
-                rows={3}
-                placeholder="URLs de imagen (separadas por coma o salto de linea)"
+                rows={isEditingBlogEntry ? 2 : 3}
+                aria-label="URLs de imagen"
+                placeholder="URLs de imagen (separadas por coma o salto de línea)"
                 value={form.imageUrls.join("\n")}
                 onChange={(e) =>
                   setForm((prev) => ({
@@ -353,6 +407,7 @@ export default function AdminPage() {
                 }
               />
               <div className="flex flex-col gap-1">
+                <label className="text-xs text-text-muted">Subir imágenes desde archivo</label>
                 <input
                   type="file"
                   accept="image/*"
@@ -364,18 +419,30 @@ export default function AdminPage() {
                 {uploadingImages && (
                   <p className="text-sm text-text-muted">Subiendo imágenes…</p>
                 )}
+                {uploadError && (
+                  <p className="text-sm text-red-400">{uploadError}</p>
+                )}
               </div>
               {form.imageUrls.length > 0 && (
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {form.imageUrls.slice(0, 6).map((imageUrl, index) => (
-                    <div key={`${imageUrl}-${index}`} className="overflow-hidden rounded border border-slate-700/80">
+                <div className="admin-blog-edit-image-grid grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {form.imageUrls.map((imageUrl, index) => (
+                    <div key={`${imageUrl}-${index}`} className="relative overflow-hidden rounded border border-slate-700/80 group">
                       <Image
-                        src={imageUrl}
+                        src={imagePreviews[imageUrl] ?? imageUrl}
                         alt={`Vista previa ${index + 1}`}
                         className="h-24 w-full object-cover"
                         width={160}
                         height={96}
+                        unoptimized
                       />
+                      <button
+                        type="button"
+                        aria-label="Eliminar imagen"
+                        className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-600/90 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-500"
+                        onClick={() => removeImageUrl(index)}
+                      >
+                        ×
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -383,6 +450,7 @@ export default function AdminPage() {
               <input
                 className="rounded border border-slate-600 bg-surface-900/85 p-2 text-text-primary"
                 placeholder="Tags separados por coma"
+                aria-label="Tags separados por coma"
                 value={tagsInput}
                 onChange={(e) => setTagsInput(e.target.value)}
               />
@@ -396,9 +464,10 @@ export default function AdminPage() {
                   }))
                 }
               >
-                <option value="public">Publico</option>
+                <option value="public">Público</option>
                 <option value="private">Privado</option>
               </select>
+              {!isEditingBlogEntry && (
               <div className="flex gap-2">
                 <button className="px-4 py-2 rounded bg-indigo-600 text-white" type="submit">
                   {editingId ? "Actualizar" : "Crear"}
@@ -407,22 +476,13 @@ export default function AdminPage() {
                   <button
                     type="button"
                     className="rounded bg-slate-600 px-4 py-2 text-white hover:bg-slate-500"
-                    onClick={() => {
-                      setEditingId(null);
-                      setForm({
-                        title: "",
-                        summary: "",
-                        body: "",
-                        imageUrls: [],
-                        tags: [],
-                        visibility: "public",
-                      });
-                      setTagsInput("");
-                    }}
+                    onClick={cancelEditing}
                   >
                     Cancelar
                   </button>
                 )}
+              </div>
+              )}
               </div>
             </form>
           </section>
@@ -432,7 +492,7 @@ export default function AdminPage() {
           <section className="rounded-xl border border-slate-700 bg-surface-800/65 p-4">
             <h2 className="text-xl font-semibold mb-3">
               {activeView === "blog"
-                ? `Articulos publicados (${filteredItems.length})`
+                ? `Artículos publicados (${filteredItems.length})`
                 : activeView === "skills"
                   ? `Capacidades publicadas (${filteredItems.length})`
                 : activeView === "portfolio"
@@ -441,32 +501,68 @@ export default function AdminPage() {
             </h2>
             {loading && <p className="text-text-secondary">Cargando...</p>}
             {!loading && filteredItems.length === 0 && (
-              <p className="text-text-secondary">Aun no hay contenido registrado en esta vista.</p>
+              <p className="text-text-secondary">Aún no hay contenido registrado en esta vista.</p>
             )}
             <div className="grid gap-3">
-              {filteredItems.map((item) => (
-                <article key={item.id} className="rounded-lg border border-slate-700/80 bg-surface-900/60 p-3">
-                  <div className="flex justify-between items-start gap-2">
-                    <div>
+              {filteredItems.map((item) => {
+                const isBlogItem = activeView === "blog";
+                const previewImage = item.imageUrls?.find((url) => url.trim().length > 0);
+                const imageCount = (item.imageUrls?.length ?? 0) + countImagesInHtml(item.body ?? "");
+
+                return (
+                  <article
+                    key={item.id}
+                    className={isBlogItem ? "admin-blog-record-card" : "admin-experience-record-card"}
+                  >
+                    {isBlogItem && (
+                      <div className="admin-blog-record-mark" aria-hidden="true">
+                        {previewImage ? (
+                          <Image src={previewImage} alt="" width={128} height={96} unoptimized />
+                        ) : (
+                          <span>ARTÍCULO</span>
+                        )}
+                      </div>
+                    )}
+                    <div className="admin-content-record-copy">
+                      <span className="admin-content-record-kind">
+                        {CONTENT_KIND_LABELS[resolveContentKind(item)]}
+                      </span>
                       <h3 className="font-semibold">{item.title}</h3>
                       <p className="text-sm text-text-secondary">{item.summary}</p>
+                      {isBlogItem && item.tags.length > 0 && (
+                        <div className="admin-content-record-tags">
+                          {item.tags.filter((tag) => tag !== "blog").slice(0, 6).map((tag) => (
+                            <span key={`${item.id}-${tag}`}>#{tag}</span>
+                          ))}
+                        </div>
+                      )}
                       <p className="mt-2 text-xs text-text-muted">
                         {item.visibility.toUpperCase()} · actualizado {item.updatedAt}
                       </p>
-                      <p className="mt-1 text-xs text-text-muted">
-                        Imagenes: {item.imageUrls?.length ?? 0}
-                      </p>
+                      {!isBlogItem && (
+                        <p className="mt-1 text-xs text-text-muted">
+                          Imágenes: {imageCount}
+                          {(item.imageUrls?.length ?? 0) === 0 && countImagesInHtml(item.body ?? "") > 0 && (
+                            <span className="ml-1 text-text-muted opacity-70">(en contenido)</span>
+                          )}
+                        </p>
+                      )}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="admin-content-record-actions">
                       <button
+                        type="button"
                         className="rounded bg-amber-500 px-2 py-1 text-white hover:bg-amber-400"
                         onClick={() => {
+                          const signedImageUrls = item.imageUrls ?? [];
                           setEditingId(item.id);
+                          setImagePreviews(
+                            Object.fromEntries(signedImageUrls.map((url) => [toCanonicalImageURL(url), url])),
+                          );
                           setForm({
                             title: item.title,
                             summary: item.summary,
                             body: item.body,
-                            imageUrls: item.imageUrls ?? [],
+                            imageUrls: signedImageUrls.map(toCanonicalImageURL),
                             tags: item.tags,
                             visibility: item.visibility,
                           });
@@ -476,9 +572,10 @@ export default function AdminPage() {
                         Editar
                       </button>
                       <button
+                        type="button"
                         className="rounded bg-red-600 px-2 py-1 text-white hover:bg-red-500"
                         onClick={async () => {
-                          if (!token) return;
+                          if (!token || !window.confirm(`¿Eliminar “${item.title}”? Esta acción no se puede deshacer.`)) return;
                           setError("");
                           try {
                             if (activeView === "skills") {
@@ -495,9 +592,9 @@ export default function AdminPage() {
                         Eliminar
                       </button>
                     </div>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           </section>
         )}
@@ -522,10 +619,10 @@ export default function AdminPage() {
           </div>
           {activeView !== "ops" && (
             <p className="mb-2 text-sm text-text-muted">
-              Esta seccion corresponde a la vista privada de operaciones.
+              Esta sección corresponde a la vista privada de operaciones.
             </p>
           )}
-          {opsLoading && <p className="text-sm text-text-secondary">Consultando metricas...</p>}
+          {opsLoading && <p className="text-sm text-text-secondary">Consultando métricas...</p>}
           {!opsLoading && opsSummary && (
             <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${semaphoreClass(opsSummary.status)}`}>
               Semaforo operativo: {opsSummary.status.toUpperCase()}
