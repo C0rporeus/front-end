@@ -3,7 +3,7 @@
  * Se ejecuta antes de `next build` vía el script "build" en package.json.
  */
 
-import { writeFileSync } from "fs";
+import { existsSync, writeFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -63,26 +63,35 @@ function urlEntry(loc, { lastmod = TODAY, priority = "0.7", changefreq = "monthl
   </url>`;
 }
 
+/** Artículos públicos del blog, o null si la API no respondió (no es lo mismo que "sin artículos"). */
 async function fetchBlogArticles() {
   try {
     const res = await fetch(`${API_URL}/api/experiences`);
     if (!res.ok) {
-      console.warn(`[sitemap] API respondió ${res.status} — solo se incluirán rutas estáticas.`);
-      return [];
+      console.warn(`[sitemap] API respondió ${res.status}.`);
+      return null;
     }
     const data = await res.json();
     const items = Array.isArray(data?.items) ? data.items : [];
     return items.filter(hasBlogTag);
   } catch (err) {
     console.warn(`[sitemap] No se pudo conectar con la API: ${err.message}`);
-    return [];
+    return null;
   }
 }
 
 async function main() {
   console.log("[sitemap] Generando sitemap.xml...");
 
-  const articles = await fetchBlogArticles();
+  const outPath = resolve(__dirname, "../public/sitemap.xml");
+  const fetched = await fetchBlogArticles();
+  if (fetched === null && existsSync(outPath)) {
+    // Sobrescribir con solo las rutas estáticas sacaría todos los artículos del
+    // índice de los buscadores por un fallo pasajero de red: se conserva el actual.
+    console.warn("[sitemap] Se conserva el sitemap.xml existente (no se pudo leer la API).");
+    return;
+  }
+  const articles = fetched ?? [];
   console.log(`[sitemap] Artículos de blog encontrados: ${articles.length}`);
 
   const staticPages = [
@@ -112,7 +121,6 @@ ${[...staticPages, ...toolPages, ...blogPages].join("\n")}
 </urlset>
 `;
 
-  const outPath = resolve(__dirname, "../public/sitemap.xml");
   writeFileSync(outPath, xml, "utf-8");
   console.log(`[sitemap] sitemap.xml generado con ${staticPages.length + toolPages.length + blogPages.length} URLs → ${outPath}`);
 }
