@@ -1,4 +1,4 @@
-import { initials } from "./CapabilityGrid";
+import { initials } from "./CapabilityTile";
 
 describe("initials", () => {
   it("skips connector words", () => {

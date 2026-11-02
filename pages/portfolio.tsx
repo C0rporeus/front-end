@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { listPublicExperiences } from "@/api/experiences";
 import LandingHeader from "@/components/layout/landing/LandingHeader";
 import { Experience } from "@/interfaces/Experience";
-import CapabilityGrid from "@/components/content/CapabilityGrid";
+import CapabilitySlider from "@/components/content/CapabilitySlider";
 import ExperienceTimeline from "@/components/content/ExperienceTimeline";
 import PortfolioShowcaseCard from "@/components/content/PortfolioShowcaseCard";
 import { filterByKind } from "@/utils/content-kind";
@@ -63,7 +63,7 @@ export default function PortfolioPage() {
           <section className="content-section" aria-labelledby="portafolio-capacidades">
             <h2 id="portafolio-capacidades" className="content-section-heading">Capacidades</h2>
             <p className="content-section-lead">Áreas en las que aporto criterio técnico y el stack asociado.</p>
-            <CapabilityGrid items={sections.skills} />
+            <CapabilitySlider title="Capacidades" labelledBy="portafolio-capacidades" items={sections.skills} />
           </section>
         )}
         {sections.samples.length > 0 && (

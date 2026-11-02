@@ -1,5 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
+
+import SliderControls from "@/components/UI/SliderControls";
+import { useHorizontalSlider } from "@/components/UI/useHorizontalSlider";
 
 export type SliderItem = {
   id: string | number;
@@ -19,101 +22,10 @@ type SliderProps = {
 };
 
 const Slider = ({ title, sectionId, data, introTag, introMessage }: SliderProps) => {
-  const sliderContainerRef = useRef<HTMLDivElement | null>(null);
+  const { trackRef, ...slider } = useHorizontalSlider(data.length, ".landing-card-item");
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>(
     {},
   );
-  const [hasHorizontalOverflow, setHasHorizontalOverflow] = useState(false);
-  const [canScrollPrev, setCanScrollPrev] = useState(false);
-  const [canScrollNext, setCanScrollNext] = useState(false);
-  const [cardsPerView, setCardsPerView] = useState(1);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
-
-  const resolveCardsPerView = useCallback(() => {
-    if (typeof window === "undefined") return 1;
-    if (window.innerWidth >= 1024) return 3;
-    if (window.innerWidth >= 768) return 2;
-    return 1;
-  }, []);
-
-  const getPageWidth = useCallback((slider: HTMLDivElement) => {
-    const firstCard = slider.querySelector<HTMLElement>(".landing-card-item");
-    if (!firstCard) return slider.clientWidth;
-    const styles = window.getComputedStyle(slider);
-    const gap = Number.parseFloat(styles.columnGap || styles.gap || "16") || 16;
-    const perView = resolveCardsPerView();
-    return firstCard.clientWidth * perView + gap * (perView - 1);
-  }, [resolveCardsPerView]);
-
-  const updateScrollState = useCallback(() => {
-    const slider = sliderContainerRef.current;
-    if (!slider) return;
-
-    const maxScroll = slider.scrollWidth - slider.clientWidth;
-    const tolerancePx = 2;
-    const hasOverflow = maxScroll > tolerancePx;
-    const perView = resolveCardsPerView();
-    const pageWidth = getPageWidth(slider);
-
-    setCardsPerView(perView);
-    setHasHorizontalOverflow(hasOverflow);
-    setCanScrollPrev(hasOverflow && slider.scrollLeft > tolerancePx);
-    setCanScrollNext(hasOverflow && slider.scrollLeft < maxScroll - tolerancePx);
-    setTotalPages(Math.max(1, Math.ceil(data.length / perView)));
-    setCurrentPage(hasOverflow && pageWidth > 0 ? Math.round(slider.scrollLeft / pageWidth) : 0);
-  }, [data.length, getPageWidth, resolveCardsPerView]);
-
-  useEffect(() => {
-    const slider = sliderContainerRef.current;
-    if (!slider) return;
-
-    updateScrollState();
-    slider.addEventListener("scroll", updateScrollState, { passive: true });
-
-    const resizeObserver = new ResizeObserver(() => updateScrollState());
-    resizeObserver.observe(slider);
-    window.addEventListener("resize", updateScrollState);
-
-    return () => {
-      slider.removeEventListener("scroll", updateScrollState);
-      resizeObserver.disconnect();
-      window.removeEventListener("resize", updateScrollState);
-    };
-  }, [updateScrollState]);
-
-  const handleScroll = (direction: "next" | "prev") => {
-    if (sliderContainerRef.current) {
-      const slider = sliderContainerRef.current;
-      const pageWidth = getPageWidth(slider);
-      const step = pageWidth > 0 ? pageWidth : slider.clientWidth;
-      const currentScroll = slider.scrollLeft;
-      const newScroll =
-        direction === "next"
-          ? currentScroll + step
-          : currentScroll - step;
-
-      slider.scrollTo({
-        left: newScroll,
-        behavior: "smooth",
-      });
-
-      window.setTimeout(updateScrollState, 220);
-    }
-  };
-
-  const goToPage = (pageIndex: number) => {
-    const slider = sliderContainerRef.current;
-    if (!slider) return;
-
-    const pageWidth = getPageWidth(slider);
-    slider.scrollTo({
-      left: Math.max(0, pageIndex) * pageWidth,
-      behavior: "smooth",
-    });
-
-    window.setTimeout(updateScrollState, 220);
-  };
 
   const markImageAsFailed = (itemId: string | number) => {
     const imageKey = String(itemId);
@@ -138,7 +50,7 @@ const Slider = ({ title, sectionId, data, introTag, introMessage }: SliderProps)
           No hay contenido publicado en esta sección todavía.
         </p>
       )}
-      <div ref={sliderContainerRef} className="landing-cards-track" role="region" aria-labelledby={sectionId}>
+      <div ref={trackRef} className="landing-cards-track" role="region" aria-labelledby={sectionId}>
         {data.map((item) => {
           const imageKey = String(item.id);
           const imageSrc = item.image?.trim() ?? "";
@@ -176,42 +88,7 @@ const Slider = ({ title, sectionId, data, introTag, introMessage }: SliderProps)
           );
         })}
       </div>
-      {hasHorizontalOverflow && (
-        <>
-          <button
-            type="button"
-            onClick={() => handleScroll("prev")}
-            className={`slider-button prev-button ${!canScrollPrev ? "is-disabled" : ""}`}
-            aria-label={`Ver ${title} anterior`}
-            disabled={!canScrollPrev}
-          >
-            {"<"}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleScroll("next")}
-            className={`slider-button next-button ${!canScrollNext ? "is-disabled" : ""}`}
-            aria-label={`Ver ${title} siguiente`}
-            disabled={!canScrollNext}
-          >
-            {">"}
-          </button>
-        </>
-      )}
-      {totalPages > 1 && (
-        <div className="slider-pagination" aria-label={`Paginación de ${title}`}>
-          {Array.from({ length: totalPages }, (_, index) => (
-            <button
-              key={`page-${index}`}
-              type="button"
-              className={`slider-dot ${index === currentPage ? "is-active" : ""}`}
-              onClick={() => goToPage(index)}
-              aria-label={`Ir a página ${index + 1} de ${Math.max(totalPages, Math.ceil(data.length / cardsPerView))}`}
-              aria-current={index === currentPage}
-            />
-          ))}
-        </div>
-      )}
+      <SliderControls title={title} slider={slider} />
     </section>
   );
 };
