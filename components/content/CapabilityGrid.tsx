@@ -19,12 +19,20 @@ type CapabilityGridProps = {
   emptyMessage?: string;
 };
 
-const initials = (title: string) =>
+// Conectores que no deben dar iniciales ("Gobierno y seguridad" → "GS", no "GY").
+const CONNECTOR_WORDS = new Set([
+  "y", "e", "o", "u", "a", "al", "de", "del", "la", "las", "el", "los", "en", "para", "por", "con", "como",
+  "and", "or", "of", "the", "for", "in", "to",
+]);
+
+/** Dos iniciales del título, ignorando conectores y signos (p. ej. paréntesis). */
+export const initials = (title: string) =>
   title
     .split(/\s+/)
-    .filter(Boolean)
+    .map((word) => word.replace(/^[^\p{L}\p{N}]+/u, ""))
+    .filter((word) => word && !CONNECTOR_WORDS.has(word.toLowerCase()))
     .slice(0, 2)
-    .map((word) => word[0]?.toUpperCase() ?? "")
+    .map((word) => word[0].toUpperCase())
     .join("");
 
 function CapabilityMark({ title, image }: { title: string; image: string }) {
