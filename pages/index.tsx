@@ -15,6 +15,7 @@ import { Skill } from "@/interfaces/Skill";
 import { SliderItem } from "@/components/UI/Slider";
 import { extractFirstImageFromHtml, stripHtml } from "@/utils/html-content";
 import { filterByKind, resolveContentKind } from "@/utils/content-kind";
+import { blogArticleHref } from "@/utils/blog-route";
 
 type SliderMappable = {
   id: string;
@@ -65,7 +66,7 @@ const Home = () => {
     () =>
       filterByKind(sortedExperiences, "blog")
         .slice(0, 8)
-        .map((item) => mapToSliderItem(item, "/blog/", "Leer artículo")),
+        .map((item) => ({ ...mapToSliderItem(item, "/blog/", "Leer artículo"), url: blogArticleHref(item.id) })),
     [sortedExperiences],
   );
 

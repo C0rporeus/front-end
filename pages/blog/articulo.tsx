@@ -1,12 +1,12 @@
 /**
- * Shell dinámico del detalle del blog.
+ * Página base (shell) del detalle del blog.
  *
- * Firebase Hosting sirve esta página (firebase.json → rewrites) para cualquier
- * /blog/<id> sin HTML generado en el build. Reutiliza la página de detalle sin
- * props estáticos: el id se toma de la URL y el artículo se pide a la API.
+ * En producción la API la descarga y la completa en cada petición a /blog/<id>
+ * (firebase.json → rewrites → Cloud Run): título, meta tags Open Graph y los
+ * datos del artículo incrustados. El build no genera ninguna página por artículo.
  */
-import BlogDetailPage from "./[id]";
+import BlogArticleView from "@/components/blog/BlogArticleView";
 
-export default function BlogDynamicArticlePage() {
-  return <BlogDetailPage article={null} related={[]} ogImage="" />;
+export default function BlogArticlePage() {
+  return <BlogArticleView />;
 }

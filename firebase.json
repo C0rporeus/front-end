@@ -34,7 +34,10 @@
     "rewrites": [
       {
         "source": "/blog/**",
-        "destination": "/blog/articulo/index.html"
+        "run": {
+          "serviceId": "porfolio-api",
+          "region": "us-central1"
+        }
       }
     ]
   }

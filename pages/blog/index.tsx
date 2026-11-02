@@ -7,6 +7,7 @@ import { listPublicExperiences } from "@/api/experiences";
 import { Experience } from "@/interfaces/Experience";
 import ErrorAlert from "@/components/UI/ErrorAlert";
 import { extractFirstImageFromHtml, stripHtml } from "@/utils/html-content";
+import { blogArticleHref } from "@/utils/blog-route";
 
 const BLOG_TAGS = ["blog", "articulo", "article", "post", "entrada"];
 const BLOG_KEYWORDS = ["blog", "articulo", "article", "post", "entrada", "editorial"];
@@ -209,12 +210,13 @@ export default function BlogPage() {
                       </div>
                     )}
 
-                    <Link
-                      href={`/blog/${post.id}`}
+                    {/* <a>, no <Link>: la página de cada artículo la construye el servidor. */}
+                    <a
+                      href={blogArticleHref(post.id)}
                       className="blog-card-link mt-auto inline-flex w-fit items-center self-start rounded-lg border border-sky-400/40 bg-sky-500/10 text-sm font-medium text-sky-200 transition hover:border-sky-300/70 hover:bg-sky-500/20"
                     >
                       Leer artículo
-                    </Link>
+                    </a>
                   </div>
                 </div>
               </article>
