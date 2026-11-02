@@ -39,7 +39,14 @@ const hasBlogTag = (item: Experience) => {
 const fetchPublicExperiencesAtBuild = async (): Promise<Experience[]> => {
   const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3100";
   const url = `${base.replace(/\/$/, "")}${API_EXPERIENCES}`;
-  const res = await fetch(url);
+  // Una caída momentánea de la API no debe romper el build: sin páginas
+  // pre-generadas, el shell /blog/articulo sirve igualmente cada artículo.
+  let res: Response;
+  try {
+    res = await fetch(url);
+  } catch {
+    return [];
+  }
   if (!res.ok) return [];
   const data = (await res.json()) as { items?: Experience[] };
   const items = Array.isArray(data?.items) ? data.items : [];
