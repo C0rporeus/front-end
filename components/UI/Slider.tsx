@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import Image from "next/image";
 
+import FadeImage from "@/components/UI/FadeImage";
 import SliderControls from "@/components/UI/SliderControls";
 import { useHorizontalSlider } from "@/components/UI/useHorizontalSlider";
 
@@ -51,7 +51,7 @@ const Slider = ({ title, sectionId, data, introTag, introMessage }: SliderProps)
         </p>
       )}
       <div ref={trackRef} className="landing-cards-track" role="region" aria-labelledby={sectionId}>
-        {data.map((item) => {
+        {data.map((item, index) => {
           const imageKey = String(item.id);
           const imageSrc = item.image?.trim() ?? "";
           const hasImage = imageSrc.length > 0;
@@ -68,12 +68,11 @@ const Slider = ({ title, sectionId, data, introTag, introMessage }: SliderProps)
                   <span>Imagen no disponible</span>
                 </div>
               ) : (
-                <Image
+                <FadeImage
                   src={imageSrc}
                   alt={item.title}
-                  className="landing-card-image"
-                  width={400}
-                  height={300}
+                  wrapperClassName="landing-card-image"
+                  priority={index < 3}
                   onError={() => markImageAsFailed(item.id)}
                 />
               )}

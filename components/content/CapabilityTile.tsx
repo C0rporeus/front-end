@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import FadeImage from "@/components/UI/FadeImage";
 import { visibleTags } from "@/utils/content-kind";
 import { extractFirstImageFromHtml, stripHtml } from "@/utils/html-content";
 
@@ -38,8 +39,7 @@ function CapabilityMark({ title, image }: { title: string; image: string }) {
     );
   }
   return (
-    // eslint-disable-next-line @next/next/no-img-element -- URLs firmadas externas, sin optimización
-    <img className="capability-mark" src={image} alt="" loading="lazy" onError={() => setFailed(true)} />
+    <FadeImage src={image} alt="" wrapperClassName="capability-mark capability-mark-image" onError={() => setFailed(true)} />
   );
 }
 

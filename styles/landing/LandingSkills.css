@@ -85,6 +85,13 @@
   color: #7ba5e0;
 }
 
+/* La marca con imagen es un FadeImage: el contenedor define el tamaño y recorta. */
+.capability-mark-image {
+  display: block;
+  overflow: hidden;
+  position: relative;
+}
+
 .capability-copy {
   flex: 1;
   min-width: 0;
