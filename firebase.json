@@ -30,6 +30,12 @@
           }
         ]
       }
+    ],
+    "rewrites": [
+      {
+        "source": "/blog/**",
+        "destination": "/blog/articulo/index.html"
+      }
     ]
   }
 }

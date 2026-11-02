@@ -12,6 +12,7 @@ import { Experience } from "@/interfaces/Experience";
 import ErrorAlert from "@/components/UI/ErrorAlert";
 import RichTextViewer from "@/components/UI/RichTextViewer";
 import { stripHtml, extractFirstImageFromHtml, removeFirstImageFromHtml } from "@/utils/html-content";
+import { articleIdFromPath } from "@/utils/blog-route";
 import {
   OG_IMAGE_HEIGHT,
   OG_IMAGE_WIDTH,
@@ -137,30 +138,35 @@ export default function BlogDetailPage({
   const [loading, setLoading] = useState(!initialArticle);
   const [error, setError] = useState("");
 
-  // En static export con fallback:false, initialArticle siempre es la fuente de verdad.
-  // loading:false inmediato cuando llegan los props estáticos.
-  useEffect(() => {
-    setLoading(!initialArticle);
-  }, [initialArticle]);
-
+  // Con props del build (artículo pre-generado) se pinta de inmediato. Sin props
+  // (shell dinámico de /blog/articulo, servido por el rewrite de Firebase para
+  // artículos creados después del build) el id sale de la URL y el artículo se
+  // pide a la API: un registro nuevo en la base de datos es visible sin rebuild.
   useEffect(() => {
     let active = true;
-    const refreshImages = async () => {
-      if (!initialArticle) return;
+    const loadFromApi = async () => {
+      const targetId = initialArticle?.id ?? articleIdFromPath(window.location.pathname);
+      if (!targetId) {
+        setLoading(false);
+        return;
+      }
       try {
         const items = await listPublicExperiencesFresh();
         if (!active) return;
         const blogEntries = items.filter(hasBlogTag).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-        const current = blogEntries.find((item) => item.id === initialArticle.id);
+        const current = blogEntries.find((item) => item.id === targetId);
         if (current) {
           setLiveArticle(current);
           setLiveRelated(selectRelated(current, blogEntries));
         }
       } catch {
         // Conservamos el contenido estático si la API no está disponible.
+        if (active && !initialArticle) setError("No se pudo cargar el artículo. Intenta de nuevo en unos segundos.");
+      } finally {
+        if (active) setLoading(false);
       }
     };
-    void refreshImages();
+    void loadFromApi();
     return () => { active = false; };
   }, [initialArticle]);
 
