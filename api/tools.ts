@@ -1,5 +1,5 @@
 import { apiRequest } from "@/api/http-client";
-import { API_TOOLS_BASE64_ENCODE, API_TOOLS_BASE64_DECODE, API_TOOLS_UUID_V4, API_TOOLS_CERTS_SELF_SIGNED, API_TOOLS_DNS_RESOLVE, API_TOOLS_DNS_PROPAGATION, API_TOOLS_DNS_MAIL_RECORDS, API_TOOLS_DNS_BLACKLIST } from "@/api/endpoints";
+import { API_TOOLS_BASE64_ENCODE, API_TOOLS_BASE64_DECODE, API_TOOLS_UUID_V4, API_TOOLS_DNS_RESOLVE, API_TOOLS_DNS_PROPAGATION, API_TOOLS_DNS_MAIL_RECORDS, API_TOOLS_DNS_BLACKLIST } from "@/api/endpoints";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -24,25 +24,6 @@ export function decodeBase64(value: string, variant: Base64Variant = "std") {
 
 export function generateUUIDv4() {
   return apiRequest<{ uuid: string }>(API_TOOLS_UUID_V4, { method: "GET" });
-}
-
-export function generateSelfSignedCert(payload: {
-  commonName: string;
-  organization: string;
-  validDays: number;
-  password: string;
-}) {
-  return apiRequest<{
-    certPem: string;
-    keyPem: string;
-    certBase64: string;
-    pfxBase64: string;
-    password: string;
-  }>(API_TOOLS_CERTS_SELF_SIGNED, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
 }
 
 export function resolveDomain(domain: string) {

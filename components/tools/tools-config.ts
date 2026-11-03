@@ -33,7 +33,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
       {
         slug: "certs",
         label: "Certificados Autofirmados",
-        description: "Generar certificados .cert/.pfx autofirmados",
+        description: "Certificados autofirmados con SAN, generados en tu navegador: nada se envía ni se guarda",
         status: "stable",
       },
       {

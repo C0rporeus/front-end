@@ -1,4 +1,4 @@
-import { decodeBase64, encodeBase64, generateSelfSignedCert, generateUUIDv4 } from "./tools";
+import { decodeBase64, encodeBase64, generateUUIDv4 } from "./tools";
 
 describe("tools api", () => {
   const originalFetch = global.fetch;
@@ -38,22 +38,21 @@ describe("tools api", () => {
     ]);
   });
 
-  it("calls uuid and cert endpoints", async () => {
+  it("calls the uuid endpoint", async () => {
     const fetchMock = jest.fn().mockResolvedValue({
       ok: true,
-      text: async () => JSON.stringify({ uuid: "u-1", certPem: "", keyPem: "", certBase64: "", pfxBase64: "", password: "x" }),
+      text: async () => JSON.stringify({ uuid: "u-1" }),
       headers: new Headers(),
     });
     global.fetch = fetchMock as unknown as typeof fetch;
 
     await generateUUIDv4();
-    await generateSelfSignedCert({
-      commonName: "localhost",
-      organization: "test",
-      validDays: 30,
-      password: "secret",
-    });
 
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("has no server endpoint for certificates (they are generated in the browser)", async () => {
+    const tools = await import("./tools");
+    expect("generateSelfSignedCert" in tools).toBe(false);
   });
 });

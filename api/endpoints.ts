@@ -23,7 +23,6 @@ export const API_PRIVATE_OPS_SUMMARY = "/api/private/ops/summary";
 export const API_TOOLS_BASE64_ENCODE = "/api/tools/base64/encode";
 export const API_TOOLS_BASE64_DECODE = "/api/tools/base64/decode";
 export const API_TOOLS_UUID_V4 = "/api/tools/uuid/v4";
-export const API_TOOLS_CERTS_SELF_SIGNED = "/api/tools/certs/self-signed";
 export const API_TOOLS_DNS_RESOLVE = "/api/tools/dns/resolve";
 export const API_TOOLS_DNS_PROPAGATION = "/api/tools/dns/propagation";
 export const API_TOOLS_DNS_MAIL_RECORDS = "/api/tools/dns/mail-records";
