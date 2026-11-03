@@ -27,14 +27,14 @@
   padding: 10px 15px;
   border-radius: 8px;
   border: 1px solid transparent;
-  background-color: var(--color-accent-strong);
+  background-color: #3a63a0; /* contraste 6:1 con texto claro (WCAG AA) */
   color: #f8fafc;
   cursor: pointer;
   transition: all 0.3s ease-in-out;
 }
 
 .submit-button:hover {
-  background-color: var(--color-accent);
+  background-color: #4a73b0;
 }
 
 .form-control:focus-visible,

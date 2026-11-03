@@ -250,6 +250,7 @@
 }
 
 .slider-pagination {
+  min-height: 1.5rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -257,7 +258,22 @@
   margin-top: 0.7rem;
 }
 
+/* Área táctil de 24×24 px (WCAG 2.5.8); el punto visible se dibuja con ::before. */
 .slider-dot {
+  position: relative;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.slider-dot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
   width: 0.55rem;
   height: 0.55rem;
   border-radius: 9999px;
@@ -266,11 +282,11 @@
   transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
 }
 
-.slider-dot:hover {
+.slider-dot:hover::before {
   background: rgba(140, 191, 252, 0.42);
 }
 
-.slider-dot.is-active {
+.slider-dot.is-active::before {
   transform: scale(1.15);
   background: rgba(170, 210, 255, 0.9);
   border-color: rgba(182, 217, 255, 0.98);
