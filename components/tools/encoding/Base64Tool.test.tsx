@@ -33,7 +33,7 @@ describe("Base64Tool", () => {
     fireEvent.click(encodeButton);
 
     await waitFor(() => {
-      expect(mockEncodeBase64).toHaveBeenCalledWith("Hello World");
+      expect(mockEncodeBase64).toHaveBeenCalledWith("Hello World", "std");
       expect(screen.getByText(mockEncoded)).toBeInTheDocument();
     });
   });
@@ -50,7 +50,7 @@ describe("Base64Tool", () => {
     fireEvent.click(decodeButton);
 
     await waitFor(() => {
-      expect(mockDecodeBase64).toHaveBeenCalledWith("SGVsbG8gV29ybGQ=");
+      expect(mockDecodeBase64).toHaveBeenCalledWith("SGVsbG8gV29ybGQ=", "std");
       expect(screen.getByText(mockDecoded)).toBeInTheDocument();
     });
   });
@@ -69,5 +69,37 @@ describe("Base64Tool", () => {
     await waitFor(() => {
       expect(screen.getByText(/Error procesando la solicitud/i)).toBeInTheDocument();
     });
+  });
+
+  test("variant url is sent to the API", async () => {
+    mockEncodeBase64.mockResolvedValue({ encoded: "Pz8_Pj4-", input: "???>>>" });
+    render(<Base64Tool />);
+    fireEvent.change(screen.getByPlaceholderText("Texto o base64"), { target: { value: "???>>>" } });
+    fireEvent.change(screen.getByLabelText("Variante"), { target: { value: "url" } });
+    fireEvent.click(screen.getByRole("button", { name: "Codificar" }));
+    await waitFor(() => {
+      expect(mockEncodeBase64).toHaveBeenCalledWith("???>>>", "url");
+      expect(screen.getByText("Pz8_Pj4-")).toBeInTheDocument();
+    });
+  });
+
+  test("hex conversion happens locally without calling the API", () => {
+    render(<Base64Tool />);
+    fireEvent.change(screen.getByPlaceholderText("Texto o base64"), { target: { value: "Zm9v" } });
+    fireEvent.click(screen.getByRole("button", { name: "Base64 → Hex" }));
+    expect(screen.getByText("666f6f")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByPlaceholderText("Texto o base64"), { target: { value: "666f6f" } });
+    fireEvent.click(screen.getByRole("button", { name: "Hex → Base64" }));
+    expect(screen.getByText("Zm9v")).toBeInTheDocument();
+    expect(mockEncodeBase64).not.toHaveBeenCalled();
+    expect(mockDecodeBase64).not.toHaveBeenCalled();
+  });
+
+  test("invalid hex shows an error instead of output", () => {
+    render(<Base64Tool />);
+    fireEvent.change(screen.getByPlaceholderText("Texto o base64"), { target: { value: "xyz" } });
+    fireEvent.click(screen.getByRole("button", { name: "Hex → Base64" }));
+    expect(screen.getByRole("alert")).toHaveTextContent(/hexadecimal/);
   });
 });

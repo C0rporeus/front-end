@@ -3,19 +3,22 @@ import { API_TOOLS_BASE64_ENCODE, API_TOOLS_BASE64_DECODE, API_TOOLS_UUID_V4, AP
 
 type JsonRecord = Record<string, unknown>;
 
-export function encodeBase64(value: string) {
-  return apiRequest<{ encoded: string; input: string }>(API_TOOLS_BASE64_ENCODE, {
+/** `std`: RFC 4648 §4 con relleno. `url`: RFC 4648 §5 sin relleno (la que usan los JWT). */
+export type Base64Variant = "std" | "url";
+
+export function encodeBase64(value: string, variant: Base64Variant = "std") {
+  return apiRequest<{ encoded: string; input: string; variant?: Base64Variant }>(API_TOOLS_BASE64_ENCODE, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ value } as JsonRecord),
+    body: JSON.stringify({ value, variant } as JsonRecord),
   });
 }
 
-export function decodeBase64(value: string) {
-  return apiRequest<{ decoded: string; input: string }>(API_TOOLS_BASE64_DECODE, {
+export function decodeBase64(value: string, variant: Base64Variant = "std") {
+  return apiRequest<{ decoded: string; input: string; variant?: Base64Variant }>(API_TOOLS_BASE64_DECODE, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ value } as JsonRecord),
+    body: JSON.stringify({ value, variant } as JsonRecord),
   });
 }
 

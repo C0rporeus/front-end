@@ -21,6 +21,23 @@ describe("tools api", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it("sends the base64 variant (default std, url on request)", async () => {
+    const fetchMock = jest.fn().mockResolvedValue({
+      ok: true,
+      text: async () => JSON.stringify({ encoded: "Zg", input: "f" }),
+      headers: new Headers(),
+    });
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    await encodeBase64("f");
+    await encodeBase64("f", "url");
+    const bodies = fetchMock.mock.calls.map((call) => JSON.parse(call[1].body as string));
+    expect(bodies).toEqual([
+      { value: "f", variant: "std" },
+      { value: "f", variant: "url" },
+    ]);
+  });
+
   it("calls uuid and cert endpoints", async () => {
     const fetchMock = jest.fn().mockResolvedValue({
       ok: true,

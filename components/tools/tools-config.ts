@@ -21,7 +21,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
       {
         slug: "base64",
         label: "Base64",
-        description: "Codificar y decodificar texto en Base64",
+        description: "Codificar y decodificar Base64 (estándar y url-safe) y convertir a hexadecimal",
         status: "stable",
       },
       {
