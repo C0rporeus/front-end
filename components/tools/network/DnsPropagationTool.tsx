@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { checkDnsPropagation } from "@/api/tools";
+import { checkDnsPropagation, type DnsStatus } from "@/api/tools";
+import { dnsFailureMessage } from "@/utils/dns-status";
 import { formatApiError } from "@/utils/format-api-error";
 import ErrorAlert from "@/components/UI/ErrorAlert";
 import ToolButton from "@/components/UI/ToolButton";
@@ -13,6 +14,7 @@ type PropagationResult = {
   recordType: string;
   records: string[];
   timestamp: string;
+  status?: DnsStatus;
 };
 
 const DnsPropagationTool = () => {
@@ -85,8 +87,8 @@ const DnsPropagationTool = () => {
                 ))}
               </ToolOutput>
             ) : (
-              <ToolOutput as="p" className="text-text-muted">
-                No se encontraron registros {result.recordType} para este dominio.
+              <ToolOutput as="p" className="text-text-muted" role="status">
+                {dnsFailureMessage(result.status) ?? `No se encontraron registros ${result.recordType} para este dominio.`}
               </ToolOutput>
             )}
           </div>

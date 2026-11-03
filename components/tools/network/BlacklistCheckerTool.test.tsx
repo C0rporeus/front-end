@@ -24,9 +24,9 @@ describe("BlacklistCheckerTool", () => {
     const mockResult = {
       ip: "8.8.8.8",
       results: [
-        { provider: "zen.spamhaus.org", listed: false },
-        { provider: "bl.spamcop.net", listed: false },
-        { provider: "dnsbl.sorbs.net", listed: true },
+        { provider: "zen.spamhaus.org", status: "not_listed" as const, listed: false },
+        { provider: "bl.spamcop.net", status: "not_listed" as const, listed: false },
+        { provider: "dnsbl.sorbs.net", status: "listed" as const, listed: true },
       ],
     };
     mockCheckBlacklist.mockResolvedValue(mockResult);
@@ -57,8 +57,8 @@ describe("BlacklistCheckerTool", () => {
     const mockBlacklistResult = {
       ip: "93.184.216.34",
       results: [
-        { provider: "zen.spamhaus.org", listed: false },
-        { provider: "bl.spamcop.net", listed: false },
+        { provider: "zen.spamhaus.org", status: "not_listed" as const, listed: false },
+        { provider: "bl.spamcop.net", status: "not_listed" as const, listed: false },
       ],
     };
     mockResolveDomain.mockResolvedValue(mockResolveResult);
@@ -84,9 +84,9 @@ describe("BlacklistCheckerTool", () => {
     const mockResult = {
       ip: "8.8.8.8",
       results: [
-        { provider: "zen.spamhaus.org", listed: false },
-        { provider: "bl.spamcop.net", listed: false },
-        { provider: "dnsbl.sorbs.net", listed: false },
+        { provider: "zen.spamhaus.org", status: "not_listed" as const, listed: false },
+        { provider: "bl.spamcop.net", status: "not_listed" as const, listed: false },
+        { provider: "dnsbl.sorbs.net", status: "not_listed" as const, listed: false },
       ],
     };
     mockCheckBlacklist.mockResolvedValue(mockResult);
@@ -102,7 +102,7 @@ describe("BlacklistCheckerTool", () => {
       expect(mockCheckBlacklist).toHaveBeenCalledWith("8.8.8.8");
       const limpiaBadges = screen.getAllByText("Limpia");
       expect(limpiaBadges).toHaveLength(3);
-      expect(screen.getByText(/IP limpia — no aparece en ninguna lista/i)).toBeInTheDocument();
+      expect(screen.getByText(/IP limpia — no aparece en ninguna de las 3 listas/i)).toBeInTheDocument();
     });
   });
 
@@ -119,6 +119,62 @@ describe("BlacklistCheckerTool", () => {
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toBeInTheDocument();
+    });
+  });
+
+  test("a provider that failed is never shown as clean and the verdict is incomplete", async () => {
+    mockCheckBlacklist.mockResolvedValue({
+      ip: "8.8.8.8",
+      results: [
+        { provider: "bl.spamcop.net", status: "not_listed", listed: false },
+        { provider: "zen.spamhaus.org", status: "error", listed: false, error: "query_blocked" },
+        { provider: "psbl.surriel.com", status: "error", listed: false, error: "timeout" },
+      ],
+    });
+
+    render(<BlacklistCheckerTool />);
+    fireEvent.change(screen.getByPlaceholderText("8.8.8.8 o ejemplo.com"), { target: { value: "8.8.8.8" } });
+    fireEvent.click(screen.getByRole("button", { name: /Verificar/i }));
+
+    await waitFor(() => {
+      expect(screen.getAllByText("Limpia")).toHaveLength(1);
+      expect(screen.getByText("La lista bloqueó la consulta")).toBeInTheDocument();
+      expect(screen.getByText("Sin respuesta (timeout)")).toBeInTheDocument();
+      expect(screen.getByRole("status")).toHaveTextContent(/2 no pudieron consultarse: resultado incompleto/);
+      expect(screen.queryByText(/IP limpia/)).not.toBeInTheDocument();
+    });
+  });
+
+  test("when no list could be queried there is no verdict at all", async () => {
+    mockCheckBlacklist.mockResolvedValue({
+      ip: "8.8.8.8",
+      results: [{ provider: "bl.spamcop.net", status: "error", listed: false, error: "timeout" }],
+    });
+
+    render(<BlacklistCheckerTool />);
+    fireEvent.change(screen.getByPlaceholderText("8.8.8.8 o ejemplo.com"), { target: { value: "8.8.8.8" } });
+    fireEvent.click(screen.getByRole("button", { name: /Verificar/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent(/no hay veredicto/);
+    });
+  });
+
+  test("listed result reports how many lists were actually consulted", async () => {
+    mockCheckBlacklist.mockResolvedValue({
+      ip: "127.0.0.2",
+      results: [
+        { provider: "bl.spamcop.net", status: "listed", listed: true, codes: ["127.0.0.2"] },
+        { provider: "zen.spamhaus.org", status: "error", listed: false, error: "timeout" },
+      ],
+    });
+
+    render(<BlacklistCheckerTool />);
+    fireEvent.change(screen.getByPlaceholderText("8.8.8.8 o ejemplo.com"), { target: { value: "127.0.0.2" } });
+    fireEvent.click(screen.getByRole("button", { name: /Verificar/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent("IP listada en 1 de 1 listas consultadas");
     });
   });
 });

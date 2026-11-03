@@ -110,4 +110,21 @@ describe("DnsPropagationTool", () => {
       expect(screen.getByText(/Error al consultar la propagación DNS/i)).toBeInTheDocument();
     });
   });
+
+  test("a timeout is not presented as 'no records found'", async () => {
+    mockCheckDnsPropagation.mockResolvedValue({
+      domain: "example.com",
+      recordType: "A",
+      records: [],
+      timestamp: "2024-01-01T00:00:00Z",
+      status: "timeout",
+    });
+    render(<DnsPropagationTool />);
+    fireEvent.change(screen.getByPlaceholderText("ejemplo.com"), { target: { value: "example.com" } });
+    fireEvent.click(screen.getByRole("button", { name: /Consultar/i }));
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent(/timeout/);
+      expect(screen.queryByText(/No se encontraron registros/)).not.toBeInTheDocument();
+    });
+  });
 });

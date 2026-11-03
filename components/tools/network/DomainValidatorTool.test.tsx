@@ -126,4 +126,24 @@ describe("DomainValidatorTool", () => {
       expect(screen.getByText(/Error al resolver el dominio/i)).toBeInTheDocument();
     });
   });
+
+  test("a DNS timeout is reported as a failed lookup, not as a missing domain", async () => {
+    mockResolveDomain.mockResolvedValue({ domain: "example.com", ipv4: [], ipv6: [], resolved: false, status: "timeout" });
+    render(<DomainValidatorTool />);
+    fireEvent.change(screen.getByPlaceholderText(/ejemplo\.com/i), { target: { value: "example.com" } });
+    fireEvent.click(screen.getByRole("button", { name: /Resolver/i }));
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent(/timeout/);
+    });
+  });
+
+  test("an NXDOMAIN is reported as a domain that does not exist", async () => {
+    mockResolveDomain.mockResolvedValue({ domain: "nope.example", ipv4: [], ipv6: [], resolved: false, status: "not_found" });
+    render(<DomainValidatorTool />);
+    fireEvent.change(screen.getByPlaceholderText(/ejemplo\.com/i), { target: { value: "nope.example" } });
+    fireEvent.click(screen.getByRole("button", { name: /Resolver/i }));
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent(/no existe/);
+    });
+  });
 });

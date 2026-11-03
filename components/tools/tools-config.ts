@@ -64,7 +64,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
       {
         slug: "dns-propagation",
         label: "Propagación DNS",
-        description: "Consultar registros DNS desde el servidor",
+        description: "Consultar registros DNS por tipo desde el resolver del servidor (no compara varios resolvers)",
         status: "beta",
       },
       {
@@ -76,7 +76,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
       {
         slug: "blacklist",
         label: "Blacklist Checker",
-        description: "Verificar si un dominio o IP está en listas negras DNSBL",
+        description: "Verificar una IPv4 (o la de un dominio) en listas DNSBL; las listas que no responden se indican aparte",
         status: "beta",
       },
       {

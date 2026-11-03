@@ -43,14 +43,14 @@ export function generateSelfSignedCert(payload: {
 }
 
 export function resolveDomain(domain: string) {
-  return apiRequest<{ domain: string; ipv4: string[]; ipv6: string[]; resolved: boolean }>(
+  return apiRequest<{ domain: string; ipv4: string[]; ipv6: string[]; resolved: boolean; status?: DnsStatus }>(
     `${API_TOOLS_DNS_RESOLVE}?domain=${encodeURIComponent(domain)}`,
     { method: "GET" }
   );
 }
 
 export function checkDnsPropagation(domain: string, recordType: string) {
-  return apiRequest<{ domain: string; recordType: string; records: string[]; timestamp: string }>(
+  return apiRequest<{ domain: string; recordType: string; records: string[]; timestamp: string; status?: DnsStatus }>(
     `${API_TOOLS_DNS_PROPAGATION}?domain=${encodeURIComponent(domain)}&type=${encodeURIComponent(recordType)}`,
     { method: "GET" }
   );
@@ -63,8 +63,24 @@ export function getMailRecords(domain: string) {
   );
 }
 
+/** Resultado de una consulta DNS: `ok` con registros; el resto explica por qué no hay. */
+export type DnsStatus = "ok" | "not_found" | "timeout" | "servfail" | "error";
+
+/** `error` significa que la lista no se pudo consultar: nunca equivale a "limpia". */
+export type BlacklistEntryStatus = "listed" | "not_listed" | "error";
+
+export type BlacklistEntry = {
+  provider: string;
+  status: BlacklistEntryStatus;
+  listed: boolean;
+  codes?: string[];
+  error?: string;
+};
+
+export type BlacklistResponse = { ip: string; results: BlacklistEntry[] };
+
 export function checkBlacklist(ip: string) {
-  return apiRequest<{ ip: string; results: Array<{ provider: string; listed: boolean }> }>(
+  return apiRequest<BlacklistResponse>(
     `${API_TOOLS_DNS_BLACKLIST}?ip=${encodeURIComponent(ip)}`,
     { method: "GET" }
   );

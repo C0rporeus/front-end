@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { resolveDomain } from "@/api/tools";
+import { resolveDomain, type DnsStatus } from "@/api/tools";
+import { dnsFailureMessage } from "@/utils/dns-status";
 import { formatApiError } from "@/utils/format-api-error";
 import ErrorAlert from "@/components/UI/ErrorAlert";
 import ToolButton from "@/components/UI/ToolButton";
@@ -10,6 +11,7 @@ type ResolveResult = {
   ipv4: string[] | null;
   ipv6: string[] | null;
   resolved: boolean;
+  status?: DnsStatus;
 };
 
 const DomainValidatorTool = () => {
@@ -61,10 +63,17 @@ const DomainValidatorTool = () => {
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <span
-                className={`inline-block h-3 w-3 rounded-full ${result.resolved ? "bg-emerald-400" : "bg-rose-400"}`}
+                className={`inline-block h-3 w-3 rounded-full ${
+                  result.resolved ? "bg-emerald-400" : dnsFailureMessage(result.status) ? "bg-amber-400" : "bg-rose-400"
+                }`}
               />
-              <span className="text-sm font-medium text-text-primary">
-                {result.resolved ? "Dominio resuelto correctamente" : "No se pudo resolver el dominio"}
+              <span className="text-sm font-medium text-text-primary" role="status">
+                {result.resolved
+                  ? "Dominio resuelto correctamente"
+                  : (dnsFailureMessage(result.status) ??
+                      (result.status === "not_found"
+                        ? "El dominio no existe o no tiene registros A/AAAA"
+                        : "No se pudo resolver el dominio"))}
               </span>
             </div>
 
