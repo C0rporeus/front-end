@@ -25,5 +25,5 @@ export const API_TOOLS_BASE64_DECODE = "/api/tools/base64/decode";
 export const API_TOOLS_UUID_V4 = "/api/tools/uuid/v4";
 export const API_TOOLS_DNS_RESOLVE = "/api/tools/dns/resolve";
 export const API_TOOLS_DNS_PROPAGATION = "/api/tools/dns/propagation";
-export const API_TOOLS_DNS_MAIL_RECORDS = "/api/tools/dns/mail-records";
+export const API_TOOLS_DNS_MAIL_AUDIT = "/api/tools/dns/mail-audit";
 export const API_TOOLS_DNS_BLACKLIST = "/api/tools/dns/blacklist";

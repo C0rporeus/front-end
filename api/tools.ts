@@ -1,5 +1,5 @@
 import { apiRequest } from "@/api/http-client";
-import { API_TOOLS_BASE64_ENCODE, API_TOOLS_BASE64_DECODE, API_TOOLS_UUID_V4, API_TOOLS_DNS_RESOLVE, API_TOOLS_DNS_PROPAGATION, API_TOOLS_DNS_MAIL_RECORDS, API_TOOLS_DNS_BLACKLIST } from "@/api/endpoints";
+import { API_TOOLS_BASE64_ENCODE, API_TOOLS_BASE64_DECODE, API_TOOLS_UUID_V4, API_TOOLS_DNS_RESOLVE, API_TOOLS_DNS_PROPAGATION, API_TOOLS_DNS_MAIL_AUDIT, API_TOOLS_DNS_BLACKLIST } from "@/api/endpoints";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -40,11 +40,40 @@ export function checkDnsPropagation(domain: string, recordType: string) {
   );
 }
 
-export function getMailRecords(domain: string) {
-  return apiRequest<{ domain: string; mx: string[]; spf: string[]; dkim: string[]; dmarc: string[] }>(
-    `${API_TOOLS_DNS_MAIL_RECORDS}?domain=${encodeURIComponent(domain)}`,
-    { method: "GET" }
-  );
+export type AuditSeverity = "critical" | "warning" | "info" | "ok";
+export type MailAuditSectionId = "mx" | "spf" | "dkim" | "dmarc" | "mta-sts" | "tls-rpt";
+
+export type AuditFinding = {
+  id: string;
+  section: MailAuditSectionId;
+  severity: AuditSeverity;
+  title: string;
+  detail?: string;
+  remediation?: string;
+};
+
+export type MailAuditSection = {
+  status: DnsStatus;
+  records: string[] | null;
+  /** Solo SPF: lookups DNS contados (límite RFC 7208 = 10). */
+  lookups?: number;
+  includes?: string[] | null;
+  /** Solo DKIM: selectores que publican una clave. */
+  selectors?: string[] | null;
+};
+
+export type MailAuditResponse = {
+  domain: string;
+  summary: Record<AuditSeverity, number>;
+  findings: AuditFinding[];
+  sections: Record<MailAuditSectionId, MailAuditSection>;
+};
+
+/** Audita MX, SPF, DKIM, DMARC, MTA-STS y TLS-RPT; `selector` añade un selector DKIM propio. */
+export function auditMail(domain: string, selector?: string) {
+  const query = new URLSearchParams({ domain });
+  if (selector) query.set("selector", selector);
+  return apiRequest<MailAuditResponse>(`${API_TOOLS_DNS_MAIL_AUDIT}?${query.toString()}`, { method: "GET" });
 }
 
 /** Resultado de una consulta DNS: `ok` con registros; el resto explica por qué no hay. */

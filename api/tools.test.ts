@@ -1,4 +1,4 @@
-import { decodeBase64, encodeBase64, generateUUIDv4 } from "./tools";
+import { auditMail, decodeBase64, encodeBase64, generateUUIDv4 } from "./tools";
 
 describe("tools api", () => {
   const originalFetch = global.fetch;
@@ -54,5 +54,20 @@ describe("tools api", () => {
   it("has no server endpoint for certificates (they are generated in the browser)", async () => {
     const tools = await import("./tools");
     expect("generateSelfSignedCert" in tools).toBe(false);
+  });
+
+  it("builds the mail-audit query with an optional, encoded selector", async () => {
+    const fetchMock = jest.fn().mockResolvedValue({
+      ok: true,
+      text: async () => JSON.stringify({ domain: "example.com", summary: {}, findings: [], sections: {} }),
+      headers: new Headers(),
+    });
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    await auditMail("example.com");
+    await auditMail("example.com", "mail 2026");
+    const urls = fetchMock.mock.calls.map((call) => String(call[0]));
+    expect(urls[0]).toMatch(/\/api\/tools\/dns\/mail-audit\?domain=example\.com$/);
+    expect(urls[1]).toMatch(/domain=example\.com&selector=mail\+2026$/);
   });
 });

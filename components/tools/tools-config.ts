@@ -69,8 +69,8 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
       },
       {
         slug: "mail-records",
-        label: "Registros de Correo",
-        description: "Consultar MX, SPF, DKIM y DMARC de un dominio",
+        label: "Auditor de correo",
+        description: "Auditar SPF, DKIM, DMARC, MX, MTA-STS y TLS-RPT con hallazgos y cómo corregirlos",
         status: "beta",
       },
       {
