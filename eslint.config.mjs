@@ -13,6 +13,7 @@ const eslintConfig = [
       "@typescript-eslint": tsPlugin,
     },
     rules: {
+      "no-console": ["error", { allow: ["warn", "error"] }],
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/consistent-type-definitions": ["error", "type"],
       "@typescript-eslint/naming-convention": [
