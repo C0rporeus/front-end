@@ -4,6 +4,8 @@ export type Experience = {
   summary: string;
   body: string;
   imageUrls: string[];
+  /** Miniatura de 640 px de la portada (solo en el listado `cards`). */
+  thumbUrl?: string;
   tags: string[];
   visibility: "public" | "private";
   createdAt: string;

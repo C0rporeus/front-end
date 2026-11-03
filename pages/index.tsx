@@ -8,7 +8,7 @@ import LandingProjectsSlider from "../components/layout/landing/LandingProjects"
 import LandingFooter from "../components/layout/landing/LandingFooter";
 import ContactForm from "../components/common/ContactForm";
 import ErrorAlert from "@/components/UI/ErrorAlert";
-import { listPublicExperiences } from "@/api/experiences";
+import { listPublicExperienceCards } from "@/api/experiences";
 import { listPublicSkills } from "@/api/skills";
 import { Experience } from "@/interfaces/Experience";
 import { Skill } from "@/interfaces/Skill";
@@ -23,12 +23,14 @@ type SliderMappable = {
   summary: string;
   body: string;
   imageUrls: string[];
+  thumbUrl?: string;
 };
 
 const mapToSliderItem = (item: SliderMappable, urlPrefix: string, ctaLabel: string): SliderItem => ({
   id: item.id,
   title: item.title,
-      description: item.summary?.trim() || stripHtml(item.body ?? "").trim() || "Contenido en actualización.",
+  description: item.summary?.trim() || stripHtml(item.body ?? "").trim() || "Contenido en actualización.",
+  thumb: item.thumbUrl || undefined,
   image: item.imageUrls?.[0] || extractFirstImageFromHtml(item.body ?? "") || "",
   url: `${urlPrefix}${item.id}`,
   ctaLabel,
@@ -42,7 +44,7 @@ const Home = () => {
   const [contentError, setContentError] = useState("");
 
   useEffect(() => {
-    Promise.all([listPublicExperiences(), listPublicSkills()])
+    Promise.all([listPublicExperienceCards(), listPublicSkills()])
       .then(([experienceItems, skillItems]) => {
         setExperiences(experienceItems);
         setSkills(skillItems);
@@ -98,6 +100,9 @@ const Home = () => {
           content="Artículos y proyectos sobre ingeniería de software, infraestructura, seguridad y operación de sistemas."
         />
         <link rel="icon" href="/favicon.ico" />
+        {/* Abre las conexiones antes de que el JS pida el contenido y las portadas. */}
+        <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL || "http://localhost:3100"} crossOrigin="use-credentials" />
+        <link rel="preconnect" href="https://storage.googleapis.com" />
       </Head>
 
       <LandingHeader />
@@ -109,16 +114,9 @@ const Home = () => {
             <ErrorAlert message={contentError} className="text-sm" />
           </section>
         )}
-        {isLoadingContent && (
-          <section className="mx-auto w-full max-w-7xl px-4 pb-0 pt-8 md:px-8">
-            <p className="rounded-xl border border-slate-700/75 bg-surface-800/55 px-4 py-3 text-sm text-text-secondary">
-              Cargando contenido dinamico del CMS...
-            </p>
-          </section>
-        )}
-        <LandingBlogSlider dataCards={blogItems} />
-        <LandingSkillsSlider dataSkills={skillsItems} />
-        <LandingProjectsSlider dataProjects={projectsItems} />
+        <LandingBlogSlider dataCards={blogItems} isLoading={isLoadingContent} />
+        <LandingSkillsSlider dataSkills={skillsItems} isLoading={isLoadingContent} />
+        <LandingProjectsSlider dataProjects={projectsItems} isLoading={isLoadingContent} />
       </main>
       <footer>
         <LandingFooter ContactForm={ContactForm} />

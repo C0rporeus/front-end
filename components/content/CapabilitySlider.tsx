@@ -9,6 +9,8 @@ type CapabilitySliderProps = {
   labelledBy: string;
   items: CapabilityItem[];
   emptyMessage?: string;
+  /** Reserva el espacio de las tarjetas mientras llega el contenido (evita CLS). */
+  isLoading?: boolean;
 };
 
 /**
@@ -17,8 +19,20 @@ type CapabilitySliderProps = {
  * una capacidad se lee en la propia tarjeta. Cada una mantiene el ancla
  * `skill-<id>` para los enlaces antiguos a /portfolio#skill-<id>.
  */
-const CapabilitySlider = ({ title, labelledBy, items, emptyMessage }: CapabilitySliderProps) => {
+const CapabilitySlider = ({ title, labelledBy, items, emptyMessage, isLoading = false }: CapabilitySliderProps) => {
   const { trackRef, ...slider } = useHorizontalSlider(items.length, ".capability-slide");
+
+  if (items.length === 0 && isLoading) {
+    return (
+      <div className="slider-container capability-slider" aria-busy="true">
+        <div className="landing-cards-track">
+          {[0, 1, 2].map((index) => (
+            <div key={index} className="capability-tile capability-slide capability-skeleton" aria-hidden="true" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return emptyMessage ? <p className="slider-empty-state">{emptyMessage}</p> : null;

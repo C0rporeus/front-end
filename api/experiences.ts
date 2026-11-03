@@ -4,6 +4,7 @@ import { getPublicCached, invalidatePublicCache } from "@/api/public-cache";
 import { API_EXPERIENCES, API_PRIVATE_EXPERIENCES } from "@/api/endpoints";
 
 const PUBLIC_EXPERIENCES_CACHE_KEY = "public-experiences";
+const PUBLIC_EXPERIENCE_CARDS_CACHE_KEY = "public-experience-cards";
 
 function normalizeExperience(item: Experience): Experience {
   return {
@@ -27,6 +28,19 @@ export async function listPublicExperiences(): Promise<Experience[]> {
 }
 
 /** Fetch without browser cache; signed GCS URLs must be refreshed for article views. */
+/**
+ * Listado ligero para las tarjetas de la landing: el API omite el cuerpo HTML y
+ * entrega resumen y portada ya derivados (`?view=cards`), una fracción del peso.
+ */
+export async function listPublicExperienceCards(): Promise<Experience[]> {
+  const data = await getPublicCached<{ items: Experience[] }>(
+    PUBLIC_EXPERIENCE_CARDS_CACHE_KEY,
+    () => apiRequest<{ items: Experience[] }>(`${API_EXPERIENCES}?view=cards`, { method: "GET" }),
+    { ttlMs: 60_000 },
+  );
+  return data.items.map(normalizeExperience);
+}
+
 export async function listPublicExperiencesFresh(): Promise<Experience[]> {
   const data = await apiRequest<{ items: Experience[] }>(API_EXPERIENCES, {
     method: "GET",
@@ -36,7 +50,7 @@ export async function listPublicExperiencesFresh(): Promise<Experience[]> {
 }
 
 export function clearPublicExperiencesCache() {
-  invalidatePublicCache([PUBLIC_EXPERIENCES_CACHE_KEY]);
+  invalidatePublicCache([PUBLIC_EXPERIENCES_CACHE_KEY, PUBLIC_EXPERIENCE_CARDS_CACHE_KEY]);
 }
 
 export async function listPrivateExperiences(token: string): Promise<Experience[]> {

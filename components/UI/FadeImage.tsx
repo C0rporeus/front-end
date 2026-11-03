@@ -7,6 +7,9 @@ type FadeImageProps = {
   wrapperClassName?: string;
   /** Imagen visible sin desplazarse: se pide ya y con prioridad alta en lugar de al acercarse. */
   priority?: boolean;
+  /** Candidatos responsive (`url 640w, url 1200w`); el navegador elige según ancho y densidad. */
+  srcSet?: string;
+  sizes?: string;
   onError?: () => void;
 };
 
@@ -18,7 +21,7 @@ type FadeImageProps = {
  * descargada y decodificada. Cubre además imágenes que ya estaban en caché antes de
  * que React asignara el evento `load`, que de otro modo se quedarían invisibles.
  */
-const FadeImage = ({ src, alt, wrapperClassName = "", priority = false, onError }: FadeImageProps) => {
+const FadeImage = ({ src, alt, wrapperClassName = "", priority = false, srcSet, sizes, onError }: FadeImageProps) => {
   const imgRef = useRef<HTMLImageElement | null>(null);
   const [loadedSrc, setLoadedSrc] = useState("");
 
@@ -44,6 +47,8 @@ const FadeImage = ({ src, alt, wrapperClassName = "", priority = false, onError 
         ref={imgRef}
         className="fade-image-img"
         src={src}
+        srcSet={srcSet}
+        sizes={sizes}
         alt={alt}
         loading={priority ? "eager" : "lazy"}
         fetchPriority={priority ? "high" : "auto"}

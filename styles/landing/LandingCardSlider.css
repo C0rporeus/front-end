@@ -400,3 +400,31 @@
     transition: none;
   }
 }
+
+/* Esqueletos: mismas medidas que las tarjetas reales para evitar saltos de layout. */
+.landing-card-skeleton {
+  pointer-events: none;
+}
+
+.landing-card-skeleton:hover {
+  transform: none;
+  border-color: rgba(124, 163, 234, 0.22);
+}
+
+.landing-card-button-skeleton {
+  background: rgba(49, 74, 116, 0.35);
+  border-color: transparent;
+  width: 8rem;
+}
+
+.capability-skeleton {
+  min-height: 9.5rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .capability-skeleton {
+    animation: fade-image-shimmer 1.4s linear infinite;
+    background: linear-gradient(110deg, #16233a 30%, #22344f 50%, #16233a 70%);
+    background-size: 200% 100%;
+  }
+}
