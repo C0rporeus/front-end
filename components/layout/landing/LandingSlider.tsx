@@ -8,21 +8,18 @@ const LandingSlider = () => {
         "Consultoría estratégica en tecnología, software e infraestructura",
       subtitle:
         "Diseño e implementación de soluciones que conectan negocio, plataformas y seguridad de forma sostenible.",
-      image: "https://source.unsplash.com/random/1920x1680?technology",
     },
     {
       id: 2,
       title: "Productos web y móviles orientados a resultados",
       subtitle:
         "Desde discovery hasta entrega continua, construyendo experiencias claras para usuarios y equipos.",
-      image: "https://source.unsplash.com/random/1920x1680?coding",
     },
     {
       id: 3,
       title: "Infraestructura moderna y seguridad por diseño",
       subtitle:
         "Automatización, cloud, contenedores y buenas prácticas de observabilidad para operar con confianza.",
-      image: "https://source.unsplash.com/random/1920x1680?Hardware",
     },
   ];
 
@@ -38,7 +35,7 @@ const LandingSlider = () => {
 
   return (
     <section
-      className="relative isolate w-full overflow-hidden"
+      className="relative isolate grid w-full overflow-hidden"
       role="region"
       aria-label="Carrusel principal de servicios"
       aria-roledescription="carousel"
@@ -46,23 +43,28 @@ const LandingSlider = () => {
       {slides.map((slide, index) => (
         <div
           key={slide.id}
-          className={`absolute inset-0 min-h-[68svh] bg-cover bg-center transition-opacity duration-500 md:min-h-[74svh] ${
+          className={`relative col-start-1 row-start-1 flex bg-[radial-gradient(circle_at_20%_20%,#24406b_0%,#15243d_55%,#0d1729_100%)] transition-opacity duration-500 ${
             index === currentSlide ? "opacity-100" : "opacity-0"
           }`}
-          style={{ backgroundImage: `url(${slide.image})` }}
           aria-hidden={index !== currentSlide}
+          inert={index !== currentSlide}
         >
           <div className="absolute inset-0 bg-slate-950/58" />
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/60 via-slate-950/30 to-transparent" />
-          <div className="relative mx-auto flex min-h-[68svh] w-full max-w-7xl items-center px-4 pb-14 pt-24 sm:px-5 md:min-h-[74svh] md:px-8 md:pt-28">
+          {/* La altura la define el contenido (grid apilado) con un mínimo por dispositivo; el padding lateral deja libres las flechas. */}
+          <div className="relative mx-auto flex min-h-[28rem] w-full max-w-7xl items-center px-14 py-14 sm:min-h-[30rem] md:min-h-[min(34rem,72svh)] md:px-24 md:py-20 lg:px-28">
             <div className="max-w-3xl">
               <p className="mb-5 text-xs font-semibold uppercase tracking-[0.24em] text-brand-400 md:text-sm">
                 Tecnología aplicada
               </p>
-              <h1 className="slide-title">{slide.title}</h1>
+              {index === currentSlide ? (
+                <h1 className="slide-title">{slide.title}</h1>
+              ) : (
+                <p className="slide-title">{slide.title}</p>
+              )}
               <p className="slide-subtitle">{slide.subtitle}</p>
               <a
-                href="#secciones-principales"
+                href="#seccion-blog"
                 className="mt-8 inline-flex min-h-11 items-center rounded-lg border border-brand-400/70 bg-brand-500/25 px-5 py-3 text-sm font-semibold text-text-primary shadow-soft hover:bg-brand-500/35 focus-visible:ring-2 focus-visible:ring-brand-400/80 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-900"
               >
                 Explorar servicios
