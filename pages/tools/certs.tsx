@@ -1,17 +1,10 @@
-import Head from "next/head";
-import ToolsLayout from "@/components/tools/ToolsLayout";
+import ToolPage from "@/components/tools/ToolPage";
 import CertsTool from "@/components/tools/encoding/CertsTool";
 
 export default function CertsPage() {
   return (
-    <>
-      <Head>
-        <title>Certificados Autofirmados | Tools | Portfolio Dev</title>
-        <meta name="description" content="Generar certificados .cert/.pfx autofirmados" />
-      </Head>
-      <ToolsLayout>
-        <CertsTool />
-      </ToolsLayout>
-    </>
+    <ToolPage slug="certs">
+      <CertsTool />
+    </ToolPage>
   );
 }

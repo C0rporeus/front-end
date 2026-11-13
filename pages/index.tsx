@@ -2,6 +2,8 @@ import Head from "next/head";
 import { useEffect, useMemo, useState } from "react";
 import LandingHeader from "../components/layout/landing/LandingHeader";
 import BoardHero from "@/components/board/BoardHero";
+import PageSeo from "@/components/seo/PageSeo";
+import { SITE_NAME, SITE_URL } from "@/utils/seo";
 import LandingArticles, { type ArticleEntry } from "@/components/layout/landing/LandingArticles";
 import LandingSkills from "@/components/layout/landing/LandingSkills";
 import LandingProjects, { type ProjectEntry } from "@/components/layout/landing/LandingProjects";
@@ -20,6 +22,28 @@ const describe = (item: Experience) =>
   item.summary?.trim() || stripHtml(item.body ?? "").trim() || "Contenido en actualización.";
 
 const coverOf = (item: Experience) => item.imageUrls?.[0] || extractFirstImageFromHtml(item.body ?? "") || "";
+
+// Quién es el autor y qué es el sitio, para buscadores. Solo datos ya publicados en la página.
+const HOME_JSON_LD = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: SITE_NAME,
+    url: SITE_URL,
+    image: `${SITE_URL}/brand/icon-192.png`,
+    jobTitle: "Consultor tecnológico",
+    description: "Diseño, construyo y opero sistemas de software: código, sistemas distribuidos, plataforma, seguridad y operación.",
+    knowsAbout: ["Go", "Kubernetes", "Sistemas distribuidos", "Infraestructura como código", "Observabilidad", "Seguridad de red", "DNS"],
+    sameAs: ["https://www.linkedin.com/in/yonathan-gutierrez-rodriguez-742a32bb/"],
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: SITE_NAME,
+    url: SITE_URL,
+    inLanguage: "es",
+  },
+];
 
 const Home = () => {
   const [experiences, setExperiences] = useState<Experience[]>([]);
@@ -88,12 +112,13 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-transparent text-text-primary">
+      <PageSeo
+        title="Yonathan Gutierrez | Software, sistemas distribuidos y operación"
+        description="Diseño, construyo y opero sistemas de software. Artículos, proyectos y herramientas sobre desarrollo, sistemas distribuidos, plataforma, seguridad y operación."
+        path="/"
+        jsonLd={HOME_JSON_LD}
+      />
       <Head>
-        <title>Yonathan Gutierrez | Software, sistemas distribuidos y operación</title>
-        <meta
-          name="description"
-          content="Diseño, construyo y opero sistemas de software. Artículos, proyectos y herramientas sobre desarrollo, sistemas distribuidos, plataforma, seguridad y operación."
-        />
         {/* Abre las conexiones antes de que el JS pida el contenido y las portadas. */}
         <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL || "http://localhost:3100"} crossOrigin="use-credentials" />
         <link rel="preconnect" href="https://storage.googleapis.com" />

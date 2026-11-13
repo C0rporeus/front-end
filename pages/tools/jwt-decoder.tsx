@@ -1,17 +1,10 @@
-import Head from "next/head";
-import ToolsLayout from "@/components/tools/ToolsLayout";
+import ToolPage from "@/components/tools/ToolPage";
 import JwtDecoderTool from "@/components/tools/encoding/JwtDecoderTool";
 
 export default function JwtDecoderPage() {
   return (
-    <>
-      <Head>
-        <title>JWT Decoder | Tools | Portfolio Dev</title>
-        <meta name="description" content="Decodificar y analizar tokens JWT: header, payload, claims y expiracion" />
-      </Head>
-      <ToolsLayout>
-        <JwtDecoderTool />
-      </ToolsLayout>
-    </>
+    <ToolPage slug="jwt-decoder">
+      <JwtDecoderTool />
+    </ToolPage>
   );
 }

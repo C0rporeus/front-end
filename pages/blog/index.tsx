@@ -1,4 +1,4 @@
-import Head from "next/head";
+import PageSeo from "@/components/seo/PageSeo";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
@@ -124,13 +124,21 @@ export default function BlogPage() {
 
   return (
     <>
-      <Head>
-        <title>Artículos | Yonathan Gutierrez</title>
-        <meta
-          name="description"
-          content="Notas técnicas sobre infraestructura, seguridad informática, sistemas distribuidos y operación de software."
-        />
-      </Head>
+      <PageSeo
+        title="Blog técnico | Yonathan Gutierrez"
+        description="Notas técnicas sobre Kubernetes, sistemas distribuidos, seguridad, observabilidad y operación de software: decisiones, consecuencias y lo que cambiaría."
+        path="/blog/"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Blog",
+            name: "Blog técnico de Yonathan Gutierrez",
+            url: "https://www.yonathangutierrez.dev/blog/",
+            inLanguage: "es",
+            author: { "@type": "Person", name: "Yonathan Gutierrez", url: "https://www.yonathangutierrez.dev" },
+          },
+        ]}
+      />
       <LandingHeader />
       <main className="public-main pt-[96px] md:pt-[104px]">
         <section className="public-page-shell mx-auto w-full max-w-5xl p-5 md:p-6">

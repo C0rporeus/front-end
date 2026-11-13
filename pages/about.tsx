@@ -1,16 +1,15 @@
-import Head from "next/head";
+import PageSeo from "@/components/seo/PageSeo";
 import LandingHeader from "@/components/layout/landing/LandingHeader";
 
 export default function About() {
   return (
     <>
-      <Head>
-        <title>Sobre mí | Yonathan Gutierrez</title>
-        <meta
-          name="description"
-          content="Perfil profesional de Yonathan Gutierrez R: consultoría tecnológica, desarrollo de productos digitales, arquitectura, infraestructura y seguridad."
-        />
-      </Head>
+      <PageSeo
+        title="Sobre mí | Yonathan Gutierrez"
+        description="Perfil profesional de Yonathan Gutierrez R: consultoría tecnológica, desarrollo de productos digitales, arquitectura, infraestructura y seguridad."
+        path="/about/"
+        type="profile"
+      />
       <LandingHeader />
       <main className="public-main pt-[96px] md:pt-[104px]">
         <section className="public-page-shell mx-auto w-full max-w-4xl">

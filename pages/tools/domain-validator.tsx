@@ -1,17 +1,10 @@
-import Head from "next/head";
-import ToolsLayout from "@/components/tools/ToolsLayout";
+import ToolPage from "@/components/tools/ToolPage";
 import DomainValidatorTool from "@/components/tools/network/DomainValidatorTool";
 
 export default function DomainValidatorPage() {
   return (
-    <>
-      <Head>
-        <title>Validador de Dominio | Tools | Portfolio Dev</title>
-        <meta name="description" content="Verificar la resolución DNS de un dominio." />
-      </Head>
-      <ToolsLayout>
-        <DomainValidatorTool />
-      </ToolsLayout>
-    </>
+    <ToolPage slug="domain-validator">
+      <DomainValidatorTool />
+    </ToolPage>
   );
 }

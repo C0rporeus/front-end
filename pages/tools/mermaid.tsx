@@ -1,29 +1,26 @@
-import Head from "next/head";
 import dynamic from "next/dynamic";
-import ToolsLayout from "@/components/tools/ToolsLayout";
+import ToolPage from "@/components/tools/ToolPage";
 
 const MermaidTool = dynamic(
   () => import("@/components/tools/diagrams/MermaidTool"),
   {
     ssr: false,
     loading: () => (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <p className="text-text-muted">Cargando editor Mermaid...</p>
-      </div>
+      <>
+        {/* El título queda en el HTML estático; el editor trae el suyo al cargar. */}
+        <h1 className="public-title mb-2">Mermaid</h1>
+        <div className="flex min-h-[400px] items-center justify-center">
+          <p className="text-text-muted">Cargando editor Mermaid...</p>
+        </div>
+      </>
     ),
   }
 );
 
 export default function MermaidPage() {
   return (
-    <>
-      <Head>
-        <title>Mermaid | Tools | Portfolio Dev</title>
-        <meta name="description" content="Generar diagramas desde texto con sintaxis Mermaid" />
-      </Head>
-      <ToolsLayout>
-        <MermaidTool />
-      </ToolsLayout>
-    </>
+    <ToolPage slug="mermaid">
+      <MermaidTool />
+    </ToolPage>
   );
 }

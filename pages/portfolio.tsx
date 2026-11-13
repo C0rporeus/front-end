@@ -1,4 +1,4 @@
-import Head from "next/head";
+import PageSeo from "@/components/seo/PageSeo";
 import { useEffect, useMemo, useState } from "react";
 
 import { listPublicExperiences } from "@/api/experiences";
@@ -40,9 +40,11 @@ export default function PortfolioPage() {
 
   return (
     <>
-      <Head>
-        <title>Portafolio | Yonathan Gutierrez</title>
-      </Head>
+      <PageSeo
+        title="Portafolio y experiencia | Yonathan Gutierrez"
+        description="Proyectos, capacidades y trayectoria de Yonathan Gutierrez: arquitectura de software, sistemas distribuidos, plataforma, seguridad y operación en seis industrias."
+        path="/portfolio/"
+      />
       <LandingHeader />
       <main className="public-main pt-[96px] md:pt-[104px]">
         <section className="public-page-shell mx-auto w-full max-w-5xl">

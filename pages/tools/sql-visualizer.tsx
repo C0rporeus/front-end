@@ -1,29 +1,26 @@
-import Head from "next/head";
 import dynamic from "next/dynamic";
-import ToolsLayout from "@/components/tools/ToolsLayout";
+import ToolPage from "@/components/tools/ToolPage";
 
 const SqlVisualizerTool = dynamic(
   () => import("@/components/tools/diagrams/SqlVisualizerTool"),
   {
     ssr: false,
     loading: () => (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <p className="text-text-muted">Cargando visualizador SQL...</p>
-      </div>
+      <>
+        {/* El título queda en el HTML estático; el editor trae el suyo al cargar. */}
+        <h1 className="public-title mb-2">Visualizador SQL</h1>
+        <div className="flex min-h-[400px] items-center justify-center">
+          <p className="text-text-muted">Cargando visualizador SQL...</p>
+        </div>
+      </>
     ),
   }
 );
 
 export default function SqlVisualizerPage() {
   return (
-    <>
-      <Head>
-        <title>Visualizador SQL | Tools | Portfolio Dev</title>
-        <meta name="description" content="Visualizar tablas y relaciones a partir de sentencias CREATE TABLE" />
-      </Head>
-      <ToolsLayout>
-        <SqlVisualizerTool />
-      </ToolsLayout>
-    </>
+    <ToolPage slug="sql-visualizer">
+      <SqlVisualizerTool />
+    </ToolPage>
   );
 }

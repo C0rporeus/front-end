@@ -1,17 +1,10 @@
-import Head from "next/head";
-import ToolsLayout from "@/components/tools/ToolsLayout";
+import ToolPage from "@/components/tools/ToolPage";
 import RsaKeysTool from "@/components/tools/encoding/RsaKeysTool";
 
 export default function RsaKeysPage() {
   return (
-    <>
-      <Head>
-        <title>Generador RSA | Tools | Portfolio Dev</title>
-        <meta name="description" content="Generar pares de claves RSA pública/privada con Web Crypto API." />
-      </Head>
-      <ToolsLayout>
-        <RsaKeysTool />
-      </ToolsLayout>
-    </>
+    <ToolPage slug="rsa-keys">
+      <RsaKeysTool />
+    </ToolPage>
   );
 }
