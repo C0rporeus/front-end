@@ -64,7 +64,14 @@ const BoardFallback = ({ activeStationId, onLayout, hidden }: BoardFallbackProps
           <rect x="0.035" y="0.035" width="0.93" height="0.93" rx="0.06" className="board-fallback-tile" />
         </pattern>
       </defs>
-      <rect x={VIEW.x} y={VIEW.y} width={VIEW.width} height={VIEW.height} fill="url(#board-tiles)" />
+      {/* Las teselas rebasan la ventana del dibujo para cubrir todo el escenario, como en la escena 3D. */}
+      <rect
+        x={VIEW.x - VIEW.width}
+        y={VIEW.y - VIEW.height}
+        width={VIEW.width * 3}
+        height={VIEW.height * 3}
+        fill="url(#board-tiles)"
+      />
       {BOARD_ROUTES.map((route) => (
         <g key={route.id} className={`board-fallback-route${lit?.has(route.id) ? " is-lit" : ""}`}>
           <path d={toSvgPath(route.points)} className="board-fallback-line" />
@@ -74,14 +81,10 @@ const BoardFallback = ({ activeStationId, onLayout, hidden }: BoardFallbackProps
       {BOARD_TAPS.map((tap) => (
         <circle key={tap.id} cx={tap.at[0]} cy={tap.at[1]} r="0.22" className="board-fallback-tap" />
       ))}
-      {BOARD_STATIONS.map((station, index) => (
+      {BOARD_STATIONS.map((station) => (
         <g key={station.id} className={station.id === activeStationId ? "is-active" : undefined}>
           <rect x={station.at[0] - 0.9} y={station.at[1] - 0.9} width="1.8" height="1.8" rx="0.12" className="board-fallback-plate" />
           <circle cx={station.at[0]} cy={station.at[1]} r="0.34" className="board-fallback-lamp" />
-          {/* Número del bloque: lo enlaza con la lista cuando no hay rótulos proyectados. */}
-          <text x={station.at[0]} y={station.at[1] - 1.35} className="board-fallback-index">
-            {index + 1}
-          </text>
         </g>
       ))}
     </svg>

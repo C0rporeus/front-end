@@ -14,13 +14,11 @@ const PROJECTED_QUERY = "(min-width: 1100px)";
 
 type NavigatorWithConnection = Navigator & { connection?: { saveData?: boolean } };
 
-/**
- * WebGL disponible, tablero a todo el ancho y el visitante no pidió menos movimiento ni
- * ahorro de datos. En franja (móvil y tableta) queda el SVG: se ve igual de bien a ese
- * tamaño y evita descargar three.js y compilar shaders en el hilo principal.
- */
+/** Gestos que cuentan como primera interacción del visitante. */
+const FIRST_INTERACTION_EVENTS = ["scroll", "pointerdown", "touchstart", "keydown"] as const;
+
+/** WebGL disponible y el visitante no pidió menos movimiento ni ahorro de datos. */
 function canRunScene(): boolean {
-  if (!window.matchMedia(PROJECTED_QUERY).matches) return false;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
   if ((navigator as NavigatorWithConnection).connection?.saveData) return false;
   try {
@@ -36,6 +34,7 @@ const BoardHero = () => {
   const [pinned, setPinned] = useState<string | null>(null);
   const [scene, setScene] = useState<"pending" | "loading" | "ready" | "unavailable">("pending");
   const labelsRef = useRef<HTMLDivElement | null>(null);
+  const indexesRef = useRef<HTMLOListElement | null>(null);
   const readoutRef = useRef<HTMLParagraphElement | null>(null);
   const leaderRef = useRef<HTMLSpanElement | null>(null);
   const projectorRef = useRef<BoardProjector | null>(null);
@@ -48,20 +47,41 @@ const BoardHero = () => {
       setScene("unavailable");
       return undefined;
     }
-    // La escena espera a que la página termine de cargar y el hilo principal quede libre.
+    // La escena (three.js y sus shaders) nunca compite con la carga inicial:
+    // - a todo el ancho arranca cuando la página terminó de cargar y el hilo principal queda libre;
+    // - en franja (móvil y tableta) el SVG cubre la carga y la escena arranca con el primer gesto.
+    const wide = window.matchMedia(PROJECTED_QUERY);
     let idle = 0;
     let timer = 0;
-    const begin = () => {
+    let scheduled = false;
+    const whenIdle = () => {
+      if (scheduled) return;
+      scheduled = true;
       if (typeof window.requestIdleCallback === "function") {
         idle = window.requestIdleCallback(() => setScene("loading"), { timeout: 2000 });
       } else {
         timer = window.setTimeout(() => setScene("loading"), 300);
       }
     };
-    if (document.readyState === "complete") begin();
-    else window.addEventListener("load", begin, { once: true });
+    const afterLoad = () => {
+      if (document.readyState === "complete") whenIdle();
+      else window.addEventListener("load", whenIdle, { once: true });
+    };
+    const onWide = (event: MediaQueryListEvent) => {
+      if (event.matches) afterLoad();
+    };
+    if (wide.matches) {
+      afterLoad();
+    } else {
+      FIRST_INTERACTION_EVENTS.forEach((name) =>
+        window.addEventListener(name, whenIdle, { once: true, passive: true }),
+      );
+      wide.addEventListener("change", onWide);
+    }
     return () => {
-      window.removeEventListener("load", begin);
+      window.removeEventListener("load", whenIdle);
+      FIRST_INTERACTION_EVENTS.forEach((name) => window.removeEventListener(name, whenIdle));
+      wide.removeEventListener("change", onWide);
       if (idle) window.cancelIdleCallback(idle);
       window.clearTimeout(timer);
     };
@@ -81,6 +101,14 @@ const BoardHero = () => {
       element.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
     });
     layer.dataset.placed = projected ? "true" : "false";
+  }, []);
+
+  // En franja no hay rótulos proyectados: cada bloque lleva su número, que sigue al dibujo (SVG o 3D).
+  const placeIndexes = useCallback((project: BoardProjector) => {
+    indexesRef.current?.querySelectorAll<HTMLElement>("[data-board-x]").forEach((element) => {
+      const { x, y } = project([Number(element.dataset.boardX), Number(element.dataset.boardY)]);
+      element.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+    });
   }, []);
 
   // La lectura cuelga del bloque enfocado: se coloca debajo (o encima si no cabe) sin salirse del hero.
@@ -120,9 +148,10 @@ const BoardHero = () => {
     (project: BoardProjector) => {
       projectorRef.current = project;
       placeLabels(project);
+      placeIndexes(project);
       placeReadout(activeIdRef.current);
     },
-    [placeLabels, placeReadout],
+    [placeIndexes, placeLabels, placeReadout],
   );
 
   useLayoutEffect(() => {
@@ -146,6 +175,18 @@ const BoardHero = () => {
             onUnavailable={markUnavailable}
           />
         )}
+        <ol ref={indexesRef} className="board-indexes" aria-hidden="true">
+          {BOARD_STATIONS.map((station, index) => (
+            <li
+              key={station.id}
+              data-board-x={station.at[0]}
+              data-board-y={station.at[1]}
+              data-active={activeId === station.id}
+            >
+              <span>{index + 1}</span>
+            </li>
+          ))}
+        </ol>
       </div>
 
       <div className="board-hero-copy">
