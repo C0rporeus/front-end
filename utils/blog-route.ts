@@ -15,6 +15,12 @@ export const BLOG_DYNAMIC_SHELL_PATH = "/blog/articulo";
 /** id del elemento <script type="application/json"> que incrusta la API (BlogArticleDataElementID). */
 export const BLOG_ARTICLE_DATA_ELEMENT_ID = "__BLOG_ARTICLE__";
 
+/**
+ * id de la copia del artículo que la API imprime en el HTML (título y texto) para
+ * rastreadores sin JavaScript. La vista la retira cuando ya pintó la suya.
+ */
+export const BLOG_STATIC_ELEMENT_ID = "__BLOG_STATIC__";
+
 const BLOG_ARTICLE_PATH = /^\/blog\/([^/?#]+)\/?$/;
 
 /** URL pública de un artículo. */

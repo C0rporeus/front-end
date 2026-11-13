@@ -8,7 +8,12 @@ import LandingHeader from "@/components/layout/landing/LandingHeader";
 import ErrorAlert from "@/components/UI/ErrorAlert";
 import RichTextViewer from "@/components/UI/RichTextViewer";
 import { Experience } from "@/interfaces/Experience";
-import { BLOG_ARTICLE_DATA_ELEMENT_ID, articleIdFromLocation, blogArticleHref } from "@/utils/blog-route";
+import {
+  BLOG_ARTICLE_DATA_ELEMENT_ID,
+  BLOG_STATIC_ELEMENT_ID,
+  articleIdFromLocation,
+  blogArticleHref,
+} from "@/utils/blog-route";
 import { filterByKind } from "@/utils/content-kind";
 import { extractFirstImageFromHtml, removeFirstImageFromHtml, stripHtml } from "@/utils/html-content";
 
@@ -115,6 +120,12 @@ export default function BlogArticleView() {
       active = false;
     };
   }, []);
+
+  // La copia que imprime el servidor cubre la carga; se retira cuando esta vista ya pintó el artículo
+  // (o su mensaje de error), para no mostrarlo dos veces.
+  useEffect(() => {
+    if (!loading) document.getElementById(BLOG_STATIC_ELEMENT_ID)?.remove();
+  }, [loading, article]);
 
   const heroImage = article ? resolveHeroImage(article) : "";
   // Si el hero proviene del body (imageUrls vacío), ocultar la primera imagen del cuerpo
