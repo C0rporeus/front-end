@@ -14,8 +14,11 @@ const PROJECTED_QUERY = "(min-width: 1100px)";
 
 type NavigatorWithConnection = Navigator & { connection?: { saveData?: boolean } };
 
-/** Gestos que cuentan como primera interacción del visitante. */
-const FIRST_INTERACTION_EVENTS = ["scroll", "pointerdown", "touchstart", "keydown"] as const;
+/**
+ * Gestos que cuentan como primera interacción del visitante. `scroll` queda fuera a propósito:
+ * también lo disparan las anclas y la restauración de posición al recargar, sin gesto alguno.
+ */
+const FIRST_INTERACTION_EVENTS = ["wheel", "pointerdown", "touchstart", "keydown"] as const;
 
 /** WebGL disponible y el visitante no pidió menos movimiento ni ahorro de datos. */
 function canRunScene(): boolean {
