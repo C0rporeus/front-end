@@ -4,6 +4,8 @@ export type Skill = {
   summary: string;
   body: string;
   imageUrls: string[];
+  /** Miniatura de la primera imagen; solo la envía el listado público. */
+  thumbUrl?: string;
   tags: string[];
   visibility: "public" | "private";
   createdAt: string;

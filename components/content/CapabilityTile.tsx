@@ -10,6 +10,8 @@ export type CapabilityItem = {
   summary: string;
   body: string;
   imageUrls: string[];
+  /** Miniatura de la primera imagen: la marca mide 48 px y no necesita el original. */
+  thumbUrl?: string;
   tags: string[];
 };
 
@@ -29,9 +31,12 @@ export const initials = (title: string) =>
     .map((word) => word[0].toUpperCase())
     .join("");
 
-function CapabilityMark({ title, image }: { title: string; image: string }) {
-  const [failed, setFailed] = useState(false);
-  if (!image || failed) {
+function CapabilityMark({ title, image, thumb }: { title: string; image: string; thumb?: string }) {
+  // Orden de intento: miniatura, original e iniciales (las imágenes antiguas no tienen miniatura).
+  const sources = [thumb, image].filter((source): source is string => Boolean(source));
+  const [attempt, setAttempt] = useState(0);
+  const src = sources[attempt];
+  if (!src) {
     return (
       <span className="capability-mark" aria-hidden="true">
         {initials(title)}
@@ -39,7 +44,12 @@ function CapabilityMark({ title, image }: { title: string; image: string }) {
     );
   }
   return (
-    <FadeImage src={image} alt="" wrapperClassName="capability-mark capability-mark-image" onError={() => setFailed(true)} />
+    <FadeImage
+      src={src}
+      alt=""
+      wrapperClassName="capability-mark capability-mark-image"
+      onError={() => setAttempt((current) => current + 1)}
+    />
   );
 }
 
@@ -50,7 +60,7 @@ export function CapabilityTileContent({ item }: { item: CapabilityItem }) {
   const tags = visibleTags(item).slice(0, 5);
   return (
     <div className="capability-link">
-      <CapabilityMark title={item.title} image={image} />
+      <CapabilityMark title={item.title} image={image} thumb={item.thumbUrl} />
       <div className="capability-copy">
         <h3 className="capability-title">{item.title}</h3>
         {description && <p className="capability-description">{description}</p>}
