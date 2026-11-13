@@ -16,6 +16,8 @@ const b612Mono = B612_Mono({
   subsets: ["latin"],
   weight: ["400", "700"],
   display: "swap",
+  // Solo rotula datos (fechas, stack): no compite con el CSS ni con Archivo en la carga inicial.
+  preload: false,
   variable: "--font-b612-mono",
 });
 

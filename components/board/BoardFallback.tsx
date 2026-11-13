@@ -40,6 +40,17 @@ const BoardFallback = ({ activeStationId, onLayout, hidden }: BoardFallbackProps
     return () => observer.disconnect();
   }, [hidden, onLayout]);
 
+  // Los pulsos repintan el SVG en cada cuadro: solo corren con el tablero en pantalla.
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg || typeof IntersectionObserver === "undefined") return undefined;
+    const observer = new IntersectionObserver(([entry]) => {
+      svg.dataset.offscreen = entry.isIntersecting ? "false" : "true";
+    });
+    observer.observe(svg);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <svg
       ref={svgRef}
@@ -63,10 +74,14 @@ const BoardFallback = ({ activeStationId, onLayout, hidden }: BoardFallbackProps
       {BOARD_TAPS.map((tap) => (
         <circle key={tap.id} cx={tap.at[0]} cy={tap.at[1]} r="0.22" className="board-fallback-tap" />
       ))}
-      {BOARD_STATIONS.map((station) => (
+      {BOARD_STATIONS.map((station, index) => (
         <g key={station.id} className={station.id === activeStationId ? "is-active" : undefined}>
           <rect x={station.at[0] - 0.9} y={station.at[1] - 0.9} width="1.8" height="1.8" rx="0.12" className="board-fallback-plate" />
           <circle cx={station.at[0]} cy={station.at[1]} r="0.34" className="board-fallback-lamp" />
+          {/* Número del bloque: lo enlaza con la lista cuando no hay rótulos proyectados. */}
+          <text x={station.at[0]} y={station.at[1] - 1.35} className="board-fallback-index">
+            {index + 1}
+          </text>
         </g>
       ))}
     </svg>

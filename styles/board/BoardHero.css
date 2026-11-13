@@ -53,7 +53,9 @@
 /* Escenario: SVG de respaldo y, encima, el canvas. */
 .board-hero-stage {
   position: relative;
-  height: clamp(15rem, 64vw, 24rem);
+  /* La franja se ciñe al dibujo (38 × 18 teselas) en lugar de dejar bandas vacías. */
+  aspect-ratio: 38 / 18;
+  max-height: 24rem;
   margin-inline: -1rem;
   overflow: hidden;
   border-block: 1px solid var(--color-border);
@@ -139,6 +141,26 @@
   fill: #9fb0b3;
 }
 
+/* Número de bloque sobre la placa: enlaza el dibujo con la lista cuando no hay rótulos proyectados. */
+.board-fallback-index {
+  fill: var(--color-text-secondary);
+  font-family: var(--font-b612-mono), ui-monospace, monospace;
+  font-size: 1.15px;
+  font-weight: 700;
+  text-anchor: middle;
+  transition: fill 220ms ease;
+}
+
+.is-active > .board-fallback-index {
+  fill: var(--color-accent);
+}
+
+/* Con la escena 3D encima o el tablero fuera de pantalla, los pulsos no repintan. */
+.board-fallback.is-hidden .board-fallback-pulse,
+.board-fallback[data-offscreen="true"] .board-fallback-pulse {
+  animation-play-state: paused;
+}
+
 @keyframes board-fallback-flow {
   to {
     stroke-dashoffset: 0;
@@ -147,8 +169,8 @@
 
 /* Bloques en lista (móvil y tableta). */
 .board-stations {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr));
   gap: 0.5rem;
   margin: 0;
   padding: 0;
@@ -156,11 +178,15 @@
 }
 
 .board-station {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 0.55rem;
+  width: 100%;
+  height: 100%;
   min-height: 2.75rem;
-  padding: 0.5rem 0.85rem 0.5rem 0.7rem;
+  padding: 0.5rem 0.75rem 0.5rem 0.7rem;
+  line-height: 1.2;
+  text-align: left;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-tile);
   background: var(--color-bg-elevated);
@@ -184,9 +210,24 @@
   transition: background-color 200ms ease;
 }
 
+.board-station-lamp {
+  flex-shrink: 0;
+}
+
+.board-station-index {
+  flex-shrink: 0;
+  font-family: var(--font-b612-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
 .board-station[data-active="true"] {
   border-color: var(--color-accent);
   color: var(--color-text-primary);
+}
+
+.board-station[data-active="true"] .board-station-index {
+  color: var(--color-accent);
 }
 
 .board-station[data-active="true"] .board-station-lamp {
@@ -249,7 +290,8 @@
   .board-hero-stage {
     position: absolute;
     inset: 0;
-    height: auto;
+    aspect-ratio: auto;
+    max-height: none;
     margin: 0;
     border: 0;
   }
@@ -315,6 +357,11 @@
 
   .board-readout-leader {
     display: block;
+  }
+
+  .board-station-index,
+  .board-fallback-index {
+    display: none;
   }
 
   .board-stations,

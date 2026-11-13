@@ -14,8 +14,13 @@ const PROJECTED_QUERY = "(min-width: 1100px)";
 
 type NavigatorWithConnection = Navigator & { connection?: { saveData?: boolean } };
 
-/** WebGL disponible y el visitante no pidió menos movimiento ni ahorro de datos. */
+/**
+ * WebGL disponible, tablero a todo el ancho y el visitante no pidió menos movimiento ni
+ * ahorro de datos. En franja (móvil y tableta) queda el SVG: se ve igual de bien a ese
+ * tamaño y evita descargar three.js y compilar shaders en el hilo principal.
+ */
 function canRunScene(): boolean {
+  if (!window.matchMedia(PROJECTED_QUERY).matches) return false;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
   if ((navigator as NavigatorWithConnection).connection?.saveData) return false;
   try {
@@ -43,8 +48,23 @@ const BoardHero = () => {
       setScene("unavailable");
       return undefined;
     }
-    const idle = window.setTimeout(() => setScene("loading"), 120);
-    return () => window.clearTimeout(idle);
+    // La escena espera a que la página termine de cargar y el hilo principal quede libre.
+    let idle = 0;
+    let timer = 0;
+    const begin = () => {
+      if (typeof window.requestIdleCallback === "function") {
+        idle = window.requestIdleCallback(() => setScene("loading"), { timeout: 2000 });
+      } else {
+        timer = window.setTimeout(() => setScene("loading"), 300);
+      }
+    };
+    if (document.readyState === "complete") begin();
+    else window.addEventListener("load", begin, { once: true });
+    return () => {
+      window.removeEventListener("load", begin);
+      if (idle) window.cancelIdleCallback(idle);
+      window.clearTimeout(timer);
+    };
   }, []);
 
   // La escena (o el SVG) dicta dónde cae cada bloque; los rótulos se mueven sin re-render.
@@ -151,7 +171,7 @@ const BoardHero = () => {
       <div ref={labelsRef} className="board-labels" data-placed="false">
         <h2 className="sr-only">Recorrido profesional</h2>
         <ol className="board-stations">
-          {BOARD_STATIONS.map((station) => (
+          {BOARD_STATIONS.map((station, index) => (
             <li key={station.id} data-board-x={station.at[0]} data-board-y={station.at[1]}>
               <button
                 type="button"
@@ -165,6 +185,9 @@ const BoardHero = () => {
                 onClick={() => setPinned((current) => (current === station.id ? null : station.id))}
               >
                 <span className="board-station-lamp" aria-hidden="true" />
+                <span className="board-station-index" aria-hidden="true">
+                  {index + 1}
+                </span>
                 <span className="board-station-label">{station.label}</span>
                 <span className="sr-only">: {station.detail}</span>
               </button>
