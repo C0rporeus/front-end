@@ -322,7 +322,8 @@
   content: "";
   position: absolute;
   left: 0;
-  right: calc(var(--bus-gap) * -1);
+  /* El tramo solo cruza la junta cuando hay un bloque a la derecha; en el último se queda en su borde. */
+  right: 0;
   top: -1.25rem;
   height: 2px;
   background: var(--color-border-strong);
@@ -343,15 +344,23 @@
   background: var(--color-accent);
 }
 
-@media (min-width: 700px) {
+@media (min-width: 700px) and (max-width: 1079.98px) {
   .capability-bus {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .capability-bus > .capability-tile:nth-child(2n + 1):not(:last-child)::before {
+    right: calc(var(--bus-gap) * -1);
   }
 }
 
 @media (min-width: 1080px) {
   .capability-bus {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .capability-bus > .capability-tile:not(:nth-child(3n)):not(:last-child)::before {
+    right: calc(var(--bus-gap) * -1);
   }
 }
 
@@ -402,9 +411,11 @@
   outline-offset: -4px;
 }
 
+/* En una columna la imagen es una banda superior; la placa no la tapa. */
 .project-tile-image {
-  position: absolute;
-  inset: 0;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  margin-bottom: auto;
 }
 
 .project-tile-image .fade-image-img {
@@ -478,6 +489,13 @@
 @media (min-width: 700px) {
   .project-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .project-tile-image {
+    position: absolute;
+    inset: 0;
+    aspect-ratio: auto;
+    margin: 0;
   }
 
   .project-tile.is-featured {

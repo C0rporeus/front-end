@@ -3,7 +3,8 @@
   color: var(--color-text-primary);
 }
 
-.contact-sector {
+/* Doble clase: .board-section fija padding-bottom a 0 y se carga después. */
+.board-section.contact-sector {
   padding-bottom: clamp(3.5rem, 9vw, 6rem);
 }
 
