@@ -1,10 +1,10 @@
 import Head from "next/head";
 import { useEffect, useMemo, useState } from "react";
 import LandingHeader from "../components/layout/landing/LandingHeader";
-import LandingSlider from "../components/layout/landing/LandingSlider";
-import LandingBlogSlider from "../components/layout/landing/LandingBlogSlider";
-import LandingSkillsSlider from "@/components/layout/landing/LandingSkills";
-import LandingProjectsSlider from "../components/layout/landing/LandingProjects";
+import BoardHero from "@/components/board/BoardHero";
+import LandingArticles, { type ArticleEntry } from "@/components/layout/landing/LandingArticles";
+import LandingSkills from "@/components/layout/landing/LandingSkills";
+import LandingProjects, { type ProjectEntry } from "@/components/layout/landing/LandingProjects";
 import LandingFooter from "../components/layout/landing/LandingFooter";
 import ContactForm from "../components/common/ContactForm";
 import ErrorAlert from "@/components/UI/ErrorAlert";
@@ -12,30 +12,14 @@ import { listPublicExperienceCards } from "@/api/experiences";
 import { listPublicSkills } from "@/api/skills";
 import { Experience } from "@/interfaces/Experience";
 import { Skill } from "@/interfaces/Skill";
-import { SliderItem } from "@/components/UI/Slider";
 import { extractFirstImageFromHtml, stripHtml } from "@/utils/html-content";
-import { filterByKind, resolveContentKind } from "@/utils/content-kind";
+import { CONTENT_KIND_LABELS, filterByKind, resolveContentKind } from "@/utils/content-kind";
 import { blogArticleHref } from "@/utils/blog-route";
 
-type SliderMappable = {
-  id: string;
-  title: string;
-  summary: string;
-  body: string;
-  imageUrls: string[];
-  thumbUrl?: string;
-};
+const describe = (item: Experience) =>
+  item.summary?.trim() || stripHtml(item.body ?? "").trim() || "Contenido en actualización.";
 
-const mapToSliderItem = (item: SliderMappable, urlPrefix: string, ctaLabel: string): SliderItem => ({
-  id: item.id,
-  title: item.title,
-  description: item.summary?.trim() || stripHtml(item.body ?? "").trim() || "Contenido en actualización.",
-  thumb: item.thumbUrl || undefined,
-  image: item.imageUrls?.[0] || extractFirstImageFromHtml(item.body ?? "") || "",
-  url: `${urlPrefix}${item.id}`,
-  ctaLabel,
-});
-
+const coverOf = (item: Experience) => item.imageUrls?.[0] || extractFirstImageFromHtml(item.body ?? "") || "";
 
 const Home = () => {
   const [experiences, setExperiences] = useState<Experience[]>([]);
@@ -64,12 +48,21 @@ const Home = () => {
 
   // Cada sección filtra por tipo de contenido (tags), nunca por palabras del cuerpo,
   // para que una capacidad no reaparezca como artículo o proyecto.
-  const blogItems = useMemo(
+  const blogItems = useMemo<ArticleEntry[]>(
     () =>
-      filterByKind(sortedExperiences, "blog")
-        .slice(0, 8)
-        .map((item) => ({ ...mapToSliderItem(item, "/blog/", "Leer artículo"), url: blogArticleHref(item.id) })),
-    [sortedExperiences],
+      [...filterByKind(experiences, "blog")]
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .slice(0, 6)
+        .map((item) => ({
+          id: item.id,
+          title: item.title,
+          description: describe(item),
+          image: coverOf(item),
+          thumb: item.thumbUrl || undefined,
+          url: blogArticleHref(item.id),
+          createdAt: item.createdAt,
+        })),
+    [experiences],
   );
 
   const skillsItems = useMemo(
@@ -77,29 +70,30 @@ const Home = () => {
     [skills],
   );
 
-  const projectsItems = useMemo(
+  const projectsItems = useMemo<ProjectEntry[]>(
     () =>
       filterByKind(sortedExperiences, "portfolio", "experience")
-        .slice(0, 8)
-        .map((item) =>
-          mapToSliderItem(
-            item,
-            "/portfolio#exp-",
-            resolveContentKind(item) === "portfolio" ? "Ver muestra" : "Ver experiencia",
-          ),
-        ),
+        .slice(0, 5)
+        .map((item) => ({
+          id: item.id,
+          title: item.title,
+          description: describe(item),
+          image: coverOf(item),
+          thumb: item.thumbUrl || undefined,
+          url: `/portfolio#exp-${item.id}`,
+          kind: CONTENT_KIND_LABELS[resolveContentKind(item)],
+        })),
     [sortedExperiences],
   );
 
   return (
     <div className="min-h-screen bg-transparent text-text-primary">
       <Head>
-        <title>Yonathan Gutierrez | Software, infraestructura y seguridad</title>
+        <title>Yonathan Gutierrez | Software, sistemas distribuidos y operación</title>
         <meta
           name="description"
-          content="Artículos y proyectos sobre ingeniería de software, infraestructura, seguridad y operación de sistemas."
+          content="Diseño, construyo y opero sistemas de software. Artículos, proyectos y herramientas sobre desarrollo, sistemas distribuidos, plataforma, seguridad y operación."
         />
-        <link rel="icon" href="/favicon.ico" />
         {/* Abre las conexiones antes de que el JS pida el contenido y las portadas. */}
         <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL || "http://localhost:3100"} crossOrigin="use-credentials" />
         <link rel="preconnect" href="https://storage.googleapis.com" />
@@ -107,16 +101,16 @@ const Home = () => {
 
       <LandingHeader />
 
-      <main id="secciones-principales" className="pt-[72px] md:pt-[76px]">
-        <LandingSlider />
+      <main id="secciones-principales" className="home-main">
+        <BoardHero />
         {contentError && (
-          <section className="mx-auto w-full max-w-7xl px-4 pb-2 pt-8 md:px-8">
+          <div className="mx-auto w-full max-w-7xl px-4 pt-8 md:px-8">
             <ErrorAlert message={contentError} className="text-sm" />
-          </section>
+          </div>
         )}
-        <LandingBlogSlider dataCards={blogItems} isLoading={isLoadingContent} />
-        <LandingSkillsSlider dataSkills={skillsItems} isLoading={isLoadingContent} />
-        <LandingProjectsSlider dataProjects={projectsItems} isLoading={isLoadingContent} />
+        <LandingArticles articles={blogItems} isLoading={isLoadingContent} />
+        <LandingSkills dataSkills={skillsItems} isLoading={isLoadingContent} />
+        <LandingProjects dataProjects={projectsItems} isLoading={isLoadingContent} />
       </main>
       <footer>
         <LandingFooter ContactForm={ContactForm} />

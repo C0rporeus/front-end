@@ -5,7 +5,7 @@ export default function About() {
   return (
     <>
       <Head>
-        <title>Sobre mí | Portfolio Dev</title>
+        <title>Sobre mí | Yonathan Gutierrez</title>
         <meta
           name="description"
           content="Perfil profesional de Yonathan Gutierrez R: consultoría tecnológica, desarrollo de productos digitales, arquitectura, infraestructura y seguridad."
@@ -27,7 +27,7 @@ export default function About() {
           </p>
         </section>
 
-        <section className="mx-auto mt-6 w-full max-w-4xl rounded-xl border border-slate-700 bg-surface-800/65 p-5">
+        <section className="public-card mx-auto mt-8 w-full max-w-4xl">
           <h2 className="text-xl font-semibold text-text-primary">Cómo trabajo</h2>
           <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-text-secondary">
             <li>Priorizo entender el contexto y los objetivos antes de proponer tecnología.</li>
@@ -37,24 +37,24 @@ export default function About() {
           </ul>
         </section>
 
-        <section className="mx-auto mt-4 w-full max-w-4xl rounded-xl border border-slate-700 bg-surface-800/65 p-5">
+        <section className="public-card mx-auto mt-4 w-full max-w-4xl">
           <h2 className="text-xl font-semibold text-text-primary">Áreas de especialidad</h2>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
-            <article className="rounded-lg border border-slate-700/80 bg-surface-900/60 p-4">
+            <article className="rounded border border-slate-700 bg-surface-950 p-4">
               <h3 className="text-sm font-semibold text-text-primary">Productos digitales</h3>
               <p className="mt-2 text-sm text-text-secondary">
                 Diseño y desarrollo de funcionalidades orientadas a valor, desde discovery
                 hasta entrega continua.
               </p>
             </article>
-            <article className="rounded-lg border border-slate-700/80 bg-surface-900/60 p-4">
+            <article className="rounded border border-slate-700 bg-surface-950 p-4">
               <h3 className="text-sm font-semibold text-text-primary">Arquitectura e infraestructura</h3>
               <p className="mt-2 text-sm text-text-secondary">
                 Estructura de soluciones web y plataformas con foco en performance,
                 escalabilidad y operación estable.
               </p>
             </article>
-            <article className="rounded-lg border border-slate-700/80 bg-surface-900/60 p-4">
+            <article className="rounded border border-slate-700 bg-surface-950 p-4">
               <h3 className="text-sm font-semibold text-text-primary">Seguridad y operación</h3>
               <p className="mt-2 text-sm text-text-secondary">
                 Buenas prácticas de seguridad aplicada, monitoreo y mejora continua para
@@ -64,7 +64,7 @@ export default function About() {
           </div>
         </section>
 
-        <section className="mx-auto mt-4 mb-6 w-full max-w-4xl rounded-xl border border-slate-700 bg-surface-800/65 p-5">
+        <section className="mx-auto mb-6 mt-8 w-full max-w-4xl">
           <p className="text-sm leading-6 text-text-secondary">
             Si quieres, puedes revisar más detalles de mi trayectoria en LinkedIn o escribirme
             desde el formulario de contacto para conversar sobre tu contexto.
@@ -73,7 +73,7 @@ export default function About() {
             href="https://www.linkedin.com/in/yonathan-gutierrez-rodriguez-742a32bb/"
             target="_blank"
             rel="noreferrer"
-            className="mt-3 inline-flex items-center rounded-lg border border-sky-400/40 bg-sky-500/10 px-4 py-2 text-sm font-medium text-sky-200 transition hover:border-sky-300/70 hover:bg-sky-500/20"
+            className="route-link mt-2"
           >
             Ver perfil en LinkedIn
           </a>

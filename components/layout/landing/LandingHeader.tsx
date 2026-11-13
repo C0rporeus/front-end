@@ -23,97 +23,69 @@ const privateLinks = [
   { href: "/admin?view=ops", label: "Operaciones" },
 ];
 
+const isCurrent = (pathname: string, href: string) => {
+  const target = href.split("?")[0];
+  return pathname === target || pathname.startsWith(`${target}/`);
+};
+
+/** Regleta superior del tablero: rótulo del autor y enlaces con lámpara de posición. */
 const LandingHeader = ({ mode = "public", onPrivateLogout }: LandingHeaderProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // La ruta se lee del navegador: el detalle del blog se sirve desde un shell con otra ruta interna.
+  const [pathname, setPathname] = useState("");
   const isPrivateMode = mode === "private";
   const navLinks = isPrivateMode ? privateLinks : publicLinks;
 
   useEffect(() => {
-    const handleScroll = () => {
-      const offset = window.scrollY;
-      setIsScrolled(offset > 50);
-    };
-
-    window.addEventListener("scroll", handleScroll);
+    setPathname(window.location.pathname.replace(/\/$/, "") || "/");
+    const handleScroll = () => setIsScrolled(window.scrollY > 24);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
-    <header
-      className={`${
-        isScrolled
-          ? "bg-surface-900/95 text-text-primary shadow-soft backdrop-blur-md"
-          : "bg-surface-900/78 text-text-primary shadow-none backdrop-blur-sm"
-      } fixed left-0 top-0 z-50 w-full border-b border-slate-700/60 transition-all duration-300`}
-    >
-      <nav
-        className="mx-auto flex min-h-[72px] w-full max-w-7xl items-center justify-between px-4 py-3 text-text-primary md:px-8"
-        aria-label="Navegación principal"
-      >
-        <div
-          className="glitch-logo text-2xl font-bold tracking-tight md:text-3xl"
-          data-text="Yonathan G."
-        >
-          <Link href={isPrivateMode ? "/admin" : "/"}>Yonathan G.</Link>
-        </div>
+    <header className="board-header" data-scrolled={isScrolled}>
+      <nav className="board-header-nav" aria-label="Navegación principal">
+        <Link href={isPrivateMode ? "/admin" : "/"} className="board-brand">
+          {/* eslint-disable-next-line @next/next/no-img-element -- export estático, isotipo local */}
+          <img src="/brand/isotipo-dark.png" alt="" width={36} height={36} className="board-brand-plate" />
+          <span className="board-brand-name">Yonathan Gutierrez</span>
+        </Link>
 
         <button
           type="button"
-          className="rounded-md border border-slate-500/60 px-3 py-2 text-sm md:hidden"
+          className="board-menu-button"
           aria-expanded={isMenuOpen}
           aria-controls="main-menu"
-          aria-label={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
           onClick={() => setIsMenuOpen((prev) => !prev)}
         >
-          Menú
+          <span className="lamp" data-state={isMenuOpen ? "active" : "on"} aria-hidden="true" />
+          {isMenuOpen ? "Cerrar" : "Menú"}
         </button>
 
-        <div className="hidden items-center gap-1 md:flex">
+        <div id="main-menu" className="board-nav-links" data-open={isMenuOpen}>
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-md px-3 py-2 text-sm text-text-secondary hover:bg-surface-800/45 hover:text-text-primary"
+              className="board-nav-link"
+              aria-current={!isPrivateMode && isCurrent(pathname, link.href) ? "page" : undefined}
+              onClick={() => setIsMenuOpen(false)}
             >
+              <span className="lamp" aria-hidden="true" />
               {link.label}
             </Link>
           ))}
           {isPrivateMode && (
-            <button
-              type="button"
-              className="ml-2 rounded-md border border-rose-400/45 bg-rose-500/20 px-3 py-2 text-sm font-medium text-rose-100 hover:bg-rose-500/35"
-              onClick={onPrivateLogout}
-            >
+            <button type="button" className="board-nav-link board-nav-logout" onClick={onPrivateLogout}>
+              <span className="lamp" data-state="fault" aria-hidden="true" />
               Cerrar sesión
             </button>
           )}
         </div>
       </nav>
-
-      <div id="main-menu" className={`${isMenuOpen ? "block" : "hidden"} border-t border-slate-700/50 md:hidden`}>
-        <div className="mx-auto flex w-full max-w-7xl flex-col px-4 py-3">
-          {navLinks.map((link) => (
-            <Link
-              key={`mobile-${link.href}`}
-              href={link.href}
-              className="rounded-md px-2 py-2 text-text-secondary hover:bg-surface-800/50 hover:text-text-primary"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              {link.label}
-            </Link>
-          ))}
-          {isPrivateMode && (
-            <button
-              type="button"
-              className="mt-1 rounded-md border border-rose-400/45 bg-rose-500/20 px-2 py-2 text-left font-medium text-rose-100 hover:bg-rose-500/35"
-              onClick={onPrivateLogout}
-            >
-              Cerrar sesión
-            </button>
-          )}
-        </div>
-      </div>
     </header>
   );
 };

@@ -29,7 +29,7 @@ An engineer's first-person account of building and operating software systems ac
 ## Capabilities and Constraints
 
 - Public routes include home, about, portfolio, blog, and developer tools.
-- Articles and portfolio entries are managed through the backend and admin interface; article detail pages are generated at build time.
+- Articles and portfolio entries are managed through the backend and admin interface; article detail pages are server-rendered by the API from the static shell.
 - The frontend uses Next.js Pages Router, React, TypeScript, and Tailwind CSS.
 - The public custom domain currently displays a hosting 404; the Firebase project URL has served an older published build.
 - Do not imply that a project is deployed, production-ready, customer-used, or measured unless the repository or user confirms it.
@@ -44,6 +44,8 @@ An engineer's first-person account of building and operating software systems ac
 
 - Source repositories in the workspace document work in platform engineering, Kubernetes, observability, resilience, infrastructure as code, security tooling, backend services, and frontend development.
 - The current site includes a blog CMS, portfolio entries, skills, and developer tools.
+- Confirmed by the author (2026-11-12): works across software development and operations; languages Go (preferred), C#, JavaScript, Python; has built for loyalty, healthcare, hydrocarbons, banking, beauty, and legal industries; has taken part in complex architecture designs with distributed systems and concurrency strategies, including atypical scenarios; is currently designing a federated AI governance system with segmented RBAC for his employer (the employer is not to be named).
+- The author must not be pigeonholed into a single technology; Kubernetes is prominent in current labs but is not the identity.
 - No verified testimonials, customer list, quantified impact statements, or external awards were found in the inspected project material.
 
 ## Product Principles

@@ -41,7 +41,7 @@ export default function PortfolioPage() {
   return (
     <>
       <Head>
-        <title>Portafolio | Portfolio Dev</title>
+        <title>Portafolio | Yonathan Gutierrez</title>
       </Head>
       <LandingHeader />
       <main className="public-main pt-[96px] md:pt-[104px]">

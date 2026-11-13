@@ -1,43 +1,111 @@
-/* Estilos para LandingFooter */
+/* Sector de contacto y regleta de cierre. */
 .landing-footer {
-  background-color: rgba(17, 27, 46, 0.95);
   color: var(--color-text-primary);
-  border-top: 1px solid var(--color-border);
-  padding: 32px 20px;
-  text-align: center;
 }
 
-.footer-contact-form {
-  margin: 0 auto 24px;
-  max-width: 760px;
+.contact-sector {
+  padding-bottom: clamp(3.5rem, 9vw, 6rem);
+}
+
+.contact-grid {
+  display: grid;
+  gap: 2rem;
+}
+
+.contact-copy {
+  position: relative;
+}
+
+.contact-copy .board-section-lead {
+  margin-bottom: 1rem;
+}
+
+.contact-panel {
+  padding: 1.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-plate);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--shadow-tile), var(--edge-light);
+}
+
+.contact-status {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.1rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  font-stretch: 112%;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.contact-status .lamp[data-state="active"] {
+  animation: lamp-blink 900ms steps(2, jump-none) infinite;
+}
+
+@keyframes lamp-blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.contact-result {
+  margin-bottom: 1rem;
+  line-height: 1.55;
+  color: var(--color-text-primary);
+}
+
+.contact-result.is-error {
+  color: var(--color-danger);
+}
+
+.footer-strip {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.25rem 1rem 1.75rem;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg-deep);
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.5rem;
 }
 
 .footer-links a {
-  color: var(--color-text-secondary);
-  text-decoration: none;
-  margin: 8px 10px;
-  font-weight: 600;
   display: inline-flex;
-  min-height: 2.75rem;
   align-items: center;
-  border-radius: 0.6rem;
-  padding: 0 0.65rem;
-  transition: all 0.3s ease-in-out;
+  min-height: 2.75rem;
+  color: var(--color-text-secondary);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-decoration: none;
 }
 
 .footer-links a:hover {
-  text-decoration: none;
-  color: var(--color-text-primary);
-  background: rgba(26, 39, 64, 0.5);
-}
-
-.footer-links a:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
+  color: var(--color-accent);
 }
 
 .footer-copy-right {
-  margin-top: 20px;
-  font-size: 0.85rem;
+  font-size: 0.8125rem;
   color: var(--color-text-muted);
+}
+
+@media (min-width: 900px) {
+  .contact-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: 4rem;
+    align-items: start;
+  }
+
+  .footer-strip {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding-inline: max(2rem, calc((100% - 76rem) / 2));
+  }
 }

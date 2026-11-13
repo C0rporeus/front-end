@@ -1,25 +1,45 @@
-import CapabilitySlider from "@/components/content/CapabilitySlider";
-import { type CapabilityItem } from "@/components/content/CapabilityTile";
+import Link from "next/link";
 
-type LandingSkillsSliderProps = {
+import BoardSection from "@/components/board/BoardSection";
+import { CapabilityTileContent, type CapabilityItem } from "@/components/content/CapabilityTile";
+
+type LandingSkillsProps = {
   dataSkills: CapabilityItem[];
   isLoading?: boolean;
 };
 
-/** Capacidades en una fila deslizable, como artículos y proyectos; las tarjetas no navegan. */
-const LandingSkillsSlider = ({ dataSkills, isLoading }: LandingSkillsSliderProps) => (
-  <section className="mx-auto w-full max-w-7xl px-4 py-10 md:px-8 md:py-12" aria-labelledby="seccion-skills">
-    <h2 id="seccion-skills" className="articles-title mb-6 text-2xl font-bold tracking-tight text-text-primary md:text-4xl">
-      Capacidades clave
-    </h2>
-    <CapabilitySlider
-      title="Capacidades clave"
-      labelledBy="seccion-skills"
-      items={dataSkills}
-      isLoading={isLoading}
-      emptyMessage="No hay contenido publicado en esta sección todavía."
-    />
-  </section>
-);
+/** Capacidades como bloques derivados de un mismo bus; se leen en la propia tesela, no navegan. */
+const LandingSkills = ({ dataSkills, isLoading = false }: LandingSkillsProps) => {
+  const showSkeleton = isLoading && dataSkills.length === 0;
+  return (
+    <BoardSection
+      headingId="seccion-skills"
+      title="Capacidades"
+      lead="Áreas en las que aporto criterio técnico, con el stack que uso en cada una."
+      action={
+        <Link href="/portfolio" className="route-link">
+          Ver trayectoria
+        </Link>
+      }
+    >
+      {!showSkeleton && dataSkills.length === 0 && (
+        <p className="board-empty">Todavía no hay capacidades publicadas.</p>
+      )}
+      {(showSkeleton || dataSkills.length > 0) && (
+        <ul className="capability-bus" aria-busy={showSkeleton}>
+          {showSkeleton
+            ? [0, 1, 2].map((index) => (
+                <li key={index} className="capability-tile capability-skeleton" aria-hidden="true" />
+              ))
+            : dataSkills.map((item) => (
+                <li key={item.id} id={`skill-${item.id}`} className="capability-tile">
+                  <CapabilityTileContent item={item} />
+                </li>
+              ))}
+        </ul>
+      )}
+    </BoardSection>
+  );
+};
 
-export default LandingSkillsSlider;
+export default LandingSkills;

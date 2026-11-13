@@ -36,7 +36,6 @@ const Login = () => {
     <>
       <Head>
         <title>Ingreso | Portfolio Dev</title>
-        <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="flex min-h-screen items-center justify-center px-4 py-10 sm:px-6">
         <section className="w-full max-w-xl rounded-3xl border border-slate-700/85 bg-surface-800/72 p-6 shadow-card backdrop-blur-sm md:p-8">

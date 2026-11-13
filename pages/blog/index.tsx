@@ -202,9 +202,9 @@ export default function BlogPage() {
                         {post.tags.map((tag) => (
                           <span
                             key={`${post.id}-${tag}`}
-                            className="blog-card-tag rounded-full border border-slate-600/80 bg-surface-900/70 text-text-secondary"
+                            className="blog-card-tag engraved-tag"
                           >
-                            #{tag}
+                            {tag}
                           </span>
                         ))}
                       </div>
@@ -213,7 +213,7 @@ export default function BlogPage() {
                     {/* <a>, no <Link>: la página de cada artículo la construye el servidor. */}
                     <a
                       href={blogArticleHref(post.id)}
-                      className="blog-card-link mt-auto inline-flex w-fit items-center self-start rounded-lg border border-sky-400/40 bg-sky-500/10 text-sm font-medium text-sky-200 transition hover:border-sky-300/70 hover:bg-sky-500/20"
+                      className="route-link mt-auto self-start"
                     >
                       Leer artículo
                     </a>
